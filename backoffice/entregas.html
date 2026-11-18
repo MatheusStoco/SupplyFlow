@@ -28,9 +28,19 @@
         <div class="alert d-none" role="status" id="aviso-entregas"></div>
 
         <section class="cartao mb-4" aria-labelledby="t-pendentes">
-          <header class="cartao__cabecalho">
+          <header class="cartao__cabecalho flex-wrap gap-2">
             <h2 class="cartao__titulo" id="t-pendentes">Aguardando retirada</h2>
             <span class="cartao__meta" id="meta-pendentes"></span>
+            <div class="busca-rapida-lista ms-auto">
+              <label for="filtro-busca-entregas" class="visually-hidden">Buscar entrega pendente</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text input-group-text--escuro border-end-0" aria-hidden="true">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="search" id="filtro-busca-entregas" class="form-control form-control-sm border-start-0"
+                       placeholder="Matrícula, colaborador, código ou EPI...">
+              </div>
+            </div>
           </header>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-pendentes">
             <table class="tabela-solicitacoes">
@@ -77,6 +87,32 @@
       </main>
     </div>
 
+  </div>
+
+  <!-- Modal de Conferência Física antes da Baixa de Estoque -->
+  <div class="modal fade" id="modal-confirmar-entrega" tabindex="-1" aria-labelledby="titulo-modal-confirmar-entrega" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <div class="modal-header border-bottom">
+          <h2 class="modal-title h5 fw-bold" id="titulo-modal-confirmar-entrega">
+            <i class="bi bi-box-arrow-up text-primary me-1" aria-hidden="true"></i> Conferir e confirmar entrega
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="small text-secondary mb-3">
+            Confirme que o colaborador abaixo está retirando fisicamente o item. Esta ação registra a entrega NR-6 e dá baixa na reserva de estoque.
+          </p>
+          <dl class="dados caixa-superficie border rounded-3 p-3 mb-0" id="resumo-conferencia-entrega"></dl>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success fw-bold px-4" id="btn-confirmar-entrega-ok">
+            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Confirmar entrega física
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="../static/vendor/bootstrap/bootstrap.bundle.min.js"></script>

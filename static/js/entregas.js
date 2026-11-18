@@ -9,6 +9,13 @@
 (function () {
   var escapar = SF.escapar;
   var aviso = document.getElementById("aviso-entregas");
+  var inputBusca = document.getElementById("filtro-busca-entregas");
+  var modalConfEl = document.getElementById("modal-confirmar-entrega");
+  var bsModalConf = modalConfEl ? new bootstrap.Modal(modalConfEl) : null;
+  var btnConfirmarModal = document.getElementById("btn-confirmar-entrega-ok");
+  var pendentesCache = [];
+  var podeEntregarAtual = false;
+  var pendenciaSelecionada = null;
 
   function mostrarAviso(texto, tipo) {
     SF.ui.mostrarAviso(aviso, texto, tipo);
@@ -24,11 +31,11 @@
       return "—";
     }
     if (pendencia.bloqueio) {
-      return '<a class="btn btn-sm btn-outline-secondary" href="devolucoes.html">Ver devolução</a>';
+      return '<a class="btn btn-sm btn-outline-secondary" href="devolucoes.html" title="Registrar devolução obrigatória antes da entrega">Resolver devolução</a>';
     }
     return (
       '<button type="button" class="btn btn-sm btn-success" data-confirmar="' + escapar(pendencia.id) + '"' +
-              ' aria-label="Confirmar entrega da solicitação ' + escapar(pendencia.codigo) + '">' +
+              ' aria-label="Conferir e confirmar entrega da solicitação ' + escapar(pendencia.codigo) + '">' +
         '<i class="bi bi-box-arrow-up" aria-hidden="true"></i> Confirmar entrega' +
       "</button>"
     );
@@ -39,6 +46,13 @@
     var textoSelo = pendencia.bloqueio || pendencia.status_rotulo;
     var htmlAcao = criarHtmlAcaoPendente(pendencia, podeEntregar);
 
+    var detalhesProduto = [];
+    if (pendencia.tamanho) detalhesProduto.push("Tam. " + pendencia.tamanho);
+    if (pendencia.ca) detalhesProduto.push("CA " + pendencia.ca);
+    var htmlDetalhesProduto = detalhesProduto.length > 0
+      ? '<br><span class="text-muted small">' + escapar(detalhesProduto.join(" · ")) + "</span>"
+      : "";
+
     return (
       "<tr>" +
         '<td><a class="numero" href="solicitacao.html?id=' + encodeURIComponent(pendencia.id) + '">' + escapar(pendencia.codigo) + "</a></td>" +
@@ -47,7 +61,7 @@
           escapar(pendencia.colaborador) +
           '<br><span class="text-muted small">' + escapar(pendencia.matricula) + " · " + escapar(pendencia.setor) + "</span>" +
         "</td>" +
-        "<td>" + escapar(pendencia.produto) + "</td>" +
+        "<td>" + escapar(pendencia.produto) + htmlDetalhesProduto + "</td>" +
         "<td>" + escapar(pendencia.quantidade) + "</td>" +
         '<td><span class="selo ' + classeSelo + '">' + escapar(textoSelo) + "</span></td>" +
         '<td class="tabela-solicitacoes__acao">' + htmlAcao + "</td>" +
@@ -76,22 +90,40 @@
     );
   }
 
+  function renderizarPendentesFiltrados() {
+    var corpoPendentes = document.getElementById("corpo-pendentes");
+    var termo = inputBusca ? inputBusca.value.trim().toLowerCase() : "";
+    var filtradas = pendentesCache.filter(function (p) {
+      if (!termo) return true;
+      var texto = [p.codigo, p.colaborador, p.matricula, p.setor, p.produto, p.ca].join(" ").toLowerCase();
+      return texto.indexOf(termo) !== -1;
+    });
+
+    document.getElementById("meta-pendentes").textContent = termo
+      ? (filtradas.length + " de " + pendentesCache.length + " pendente(s)")
+      : (pendentesCache.length + " pendente(s)");
+
+    if (filtradas.length === 0) {
+      var msgVazia = termo
+        ? "Nenhuma entrega pendente encontrada para “" + termo + "”."
+        : "Nenhuma entrega aguardando retirada.";
+      corpoPendentes.innerHTML = criarLinhaTabelaVazia(7, msgVazia);
+      return;
+    }
+
+    corpoPendentes.innerHTML = filtradas.map(function (pendencia) {
+      return criarLinhaEntregaPendenteHtml(pendencia, podeEntregarAtual);
+    }).join("");
+  }
+
   function carregar() {
     SF.api.get("/api/entregas/")
       .then(function (dados) {
-        var listaPendentes = dados.pendentes || [];
+        pendentesCache = dados.pendentes || [];
+        podeEntregarAtual = Boolean(dados.pode_entregar);
         var listaConfirmadas = dados.entregas || [];
 
-        document.getElementById("meta-pendentes").textContent = listaPendentes.length + " pendente(s)";
-
-        var corpoPendentes = document.getElementById("corpo-pendentes");
-        if (listaPendentes.length === 0) {
-          corpoPendentes.innerHTML = criarLinhaTabelaVazia(7, "Nenhuma entrega aguardando retirada.");
-        } else {
-          corpoPendentes.innerHTML = listaPendentes.map(function (pendencia) {
-            return criarLinhaEntregaPendenteHtml(pendencia, dados.pode_entregar);
-          }).join("");
-        }
+        renderizarPendentesFiltrados();
 
         var corpoConfirmadas = document.getElementById("corpo-confirmadas");
         if (listaConfirmadas.length === 0) {
@@ -105,23 +137,72 @@
       });
   }
 
+  function abrirModalConferenciaEntrega(pendencia) {
+    pendenciaSelecionada = pendencia;
+    if (!bsModalConf) {
+      executarConfirmacaoEntrega(pendencia.id);
+      return;
+    }
+    var pares = [
+      ["Solicitação", pendencia.codigo],
+      ["Colaborador", pendencia.colaborador + " (" + pendencia.matricula + ")"],
+      ["Setor", pendencia.setor],
+      ["Produto", pendencia.produto],
+      ["Quantidade", pendencia.quantidade + " un."]
+    ];
+    if (pendencia.tamanho) pares.push(["Tamanho", pendencia.tamanho]);
+    if (pendencia.ca) pares.push(["CA", pendencia.ca]);
+    if (pendencia.totem) pares.push(["Totem", pendencia.totem]);
+
+    document.getElementById("resumo-conferencia-entrega").innerHTML = pares.map(function (par) {
+      return "<div><dt>" + escapar(par[0]) + "</dt><dd>" + escapar(par[1]) + "</dd></div>";
+    }).join("");
+
+    if (btnConfirmarModal) btnConfirmarModal.disabled = false;
+    bsModalConf.show();
+  }
+
+  function executarConfirmacaoEntrega(idSolicitacao) {
+    if (btnConfirmarModal) btnConfirmarModal.disabled = true;
+    var urlConfirmar = "/api/entregas/" + encodeURIComponent(idSolicitacao) + "/confirmar/";
+
+    SF.api.post(urlConfirmar)
+      .then(function (resposta) {
+        if (bsModalConf) bsModalConf.hide();
+        mostrarAviso(resposta.mensagem, "success");
+        carregar();
+      })
+      .catch(function (erro) {
+        if (bsModalConf) bsModalConf.hide();
+        mostrarAviso(erro.message, "danger");
+      })
+      .finally(function () {
+        if (btnConfirmarModal) btnConfirmarModal.disabled = false;
+      });
+  }
+
+  if (inputBusca) {
+    inputBusca.addEventListener("input", renderizarPendentesFiltrados);
+  }
+
+  if (btnConfirmarModal) {
+    btnConfirmarModal.addEventListener("click", function () {
+      if (pendenciaSelecionada) {
+        executarConfirmacaoEntrega(pendenciaSelecionada.id);
+      }
+    });
+  }
+
   document.getElementById("corpo-pendentes").addEventListener("click", function (evento) {
     var botaoConfirmar = evento.target.closest("[data-confirmar]");
     if (!botaoConfirmar) {
       return;
     }
-    botaoConfirmar.disabled = true;
-    var urlConfirmar = "/api/entregas/" + encodeURIComponent(botaoConfirmar.dataset.confirmar) + "/confirmar/";
-
-    SF.api.post(urlConfirmar)
-      .then(function (resposta) {
-        mostrarAviso(resposta.mensagem, "success");
-        carregar();
-      })
-      .catch(function (erro) {
-        mostrarAviso(erro.message, "danger");
-        botaoConfirmar.disabled = false;
-      });
+    var idAlvo = botaoConfirmar.dataset.confirmar;
+    var pendencia = pendentesCache.find(function (item) { return item.id === idAlvo; });
+    if (pendencia) {
+      abrirModalConferenciaEntrega(pendencia);
+    }
   });
 
   aviso.setAttribute("tabindex", "-1");

@@ -31,6 +31,8 @@ def api_listar_entregas(request):
             "matricula": s.solicitante.codigo_matricula,
             "setor": s.solicitante.setor.nome if s.solicitante.setor else "—",
             "produto": item.produto.nome if item else "—",
+            "tamanho": (item.produto.tamanho or "") if item else "",
+            "ca": (item.produto.ca or "") if item else "",
             "quantidade": (item.quantidade_aprovada or item.quantidade_solicitada) if item else 0,
             "totem": s.totem.nome if s.totem else "—",
             "status_rotulo": estados.rotulo(s.status),
