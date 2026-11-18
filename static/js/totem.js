@@ -124,31 +124,43 @@
     });
   }
 
+  /* ---------- Helpers de Teclado Virtual e Cliques ---------- */
+  function aoClicar(id, acao) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("click", acao);
+    }
+  }
+
+  function conectarTecladoVirtual(seletorTeclas, opcoes) {
+    document.querySelectorAll(seletorTeclas).forEach(function (botao) {
+      botao.addEventListener("click", function () {
+        opcoes.aoDigitar(this.dataset.val);
+      });
+    });
+    if (opcoes.idApagar && opcoes.aoApagar) {
+      aoClicar(opcoes.idApagar, opcoes.aoApagar);
+    }
+    if (opcoes.idLimpar && opcoes.aoLimpar) {
+      aoClicar(opcoes.idLimpar, opcoes.aoLimpar);
+    }
+  }
+
   /* ---------- Passo 2: Teclado de Matrícula ---------- */
-  document.querySelectorAll(".tecla-num").forEach(function (botaoTecla) {
-    botaoTecla.addEventListener("click", function () {
-      var digito = this.dataset.val;
+  conectarTecladoVirtual(".tecla-num", {
+    idApagar: "btn-matricula-apagar",
+    aoDigitar: function (digito) {
       if (estado.matricula.length < TAMANHO_MAX_MATRICULA) {
         estado.matricula += digito;
         inputMatricula.value = estado.matricula;
       }
-    });
-  });
-
-  var btnMatriculaApagar = document.getElementById("btn-matricula-apagar");
-  if (btnMatriculaApagar) {
-    btnMatriculaApagar.addEventListener("click", function () {
+    },
+    aoApagar: function () {
       estado.matricula = estado.matricula.slice(0, -1);
       inputMatricula.value = estado.matricula;
-    });
-  }
-
-  var btnMatriculaConfirmar = document.getElementById("btn-matricula-confirmar");
-  if (btnMatriculaConfirmar) {
-    btnMatriculaConfirmar.addEventListener("click", function () {
-      validarMatriculaEAvancar();
-    });
-  }
+    }
+  });
+  aoClicar("btn-matricula-confirmar", validarMatriculaEAvancar);
 
   function validarMatriculaEAvancar() {
     var matriculaDigitada = (inputMatricula.value || estado.matricula).trim().toUpperCase();
@@ -176,11 +188,7 @@
     for (var i = 0; i < TAMANHO_MAX_PIN; i++) {
       var bolinha = document.getElementById("dot-" + i);
       if (bolinha) {
-        if (i < estado.pin.length) {
-          bolinha.classList.add("preenchido");
-        } else {
-          bolinha.classList.remove("preenchido");
-        }
+        bolinha.classList.toggle("preenchido", i < estado.pin.length);
       }
     }
     if (btnPinEntrar) {
@@ -188,37 +196,29 @@
     }
   }
 
-  document.querySelectorAll(".tecla-pin").forEach(function (botaoPin) {
-    botaoPin.addEventListener("click", function () {
-      if (estado.pin.length < TAMANHO_MAX_PIN) {
-        estado.pin += this.dataset.val;
-        atualizarPinDots();
-
-        if (estado.pin.length === TAMANHO_MAX_PIN) {
-          /* Aguarda 150ms para o colaborador ver a 6ª bolinha preenchida antes de enviar */
-          setTimeout(autenticarPin, 150);
-        }
+  conectarTecladoVirtual(".tecla-pin", {
+    idApagar: "btn-pin-apagar",
+    idLimpar: "btn-pin-limpar",
+    aoDigitar: function (digito) {
+      if (estado.pin.length >= TAMANHO_MAX_PIN) return;
+      estado.pin += digito;
+      atualizarPinDots();
+      if (estado.pin.length === TAMANHO_MAX_PIN) {
+        /* Aguarda 150ms para o colaborador ver a 6ª bolinha preenchida antes de enviar */
+        setTimeout(autenticarPin, 150);
       }
-    });
-  });
-
-  var btnPinApagar = document.getElementById("btn-pin-apagar");
-  if (btnPinApagar) {
-    btnPinApagar.addEventListener("click", function () {
+    },
+    aoApagar: function () {
       if (estado.pin.length > 0) {
         estado.pin = estado.pin.slice(0, -1);
         atualizarPinDots();
       }
-    });
-  }
-
-  var btnPinLimpar = document.getElementById("btn-pin-limpar");
-  if (btnPinLimpar) {
-    btnPinLimpar.addEventListener("click", function () {
+    },
+    aoLimpar: function () {
       estado.pin = "";
       atualizarPinDots();
-    });
-  }
+    }
+  });
 
   if (btnPinEntrar) {
     btnPinEntrar.addEventListener("click", function () {
@@ -248,35 +248,25 @@
 
   /* ---------- Passo 3.5: Troca Obrigatória de PIN Provisório no 1º Acesso ---------- */
   function prepararPassoTrocarPin() {
-    if (inputNovoPin) {
-      inputNovoPin.value = "";
-    }
-    if (inputConfirmaPin) {
-      inputConfirmaPin.value = "";
-    }
+    if (inputNovoPin) inputNovoPin.value = "";
+    if (inputConfirmaPin) inputConfirmaPin.value = "";
     campoNovoPinAtivo = inputNovoPin;
-    if (inputNovoPin) {
-      inputNovoPin.focus();
+    if (inputNovoPin) inputNovoPin.focus();
+  }
+
+  [inputNovoPin, inputConfirmaPin].forEach(function (campo) {
+    if (campo) {
+      campo.addEventListener("focus", function () {
+        campoNovoPinAtivo = campo;
+      });
     }
-  }
+  });
 
-  if (inputNovoPin) {
-    inputNovoPin.addEventListener("focus", function () {
-      campoNovoPinAtivo = inputNovoPin;
-    });
-  }
-  if (inputConfirmaPin) {
-    inputConfirmaPin.addEventListener("focus", function () {
-      campoNovoPinAtivo = inputConfirmaPin;
-    });
-  }
-
-  document.querySelectorAll(".tecla-novo-pin").forEach(function (botaoTecla) {
-    botaoTecla.addEventListener("click", function () {
-      if (!inputNovoPin || !inputConfirmaPin) {
-        return;
-      }
-      var digito = this.dataset.val;
+  conectarTecladoVirtual(".tecla-novo-pin", {
+    idApagar: "btn-novo-pin-apagar",
+    idLimpar: "btn-novo-pin-limpar",
+    aoDigitar: function (digito) {
+      if (!inputNovoPin || !inputConfirmaPin) return;
       var alvo = campoNovoPinAtivo || inputNovoPin;
       if (alvo === inputNovoPin && inputNovoPin.value.length >= TAMANHO_MAX_PIN && inputConfirmaPin.value.length < TAMANHO_MAX_PIN) {
         alvo = inputConfirmaPin;
@@ -288,30 +278,18 @@
           campoNovoPinAtivo = inputConfirmaPin;
         }
       }
-    });
-  });
-
-  var btnNovoPinLimpar = document.getElementById("btn-novo-pin-limpar");
-  if (btnNovoPinLimpar) {
-    btnNovoPinLimpar.addEventListener("click", function () {
-      prepararPassoTrocarPin();
-    });
-  }
-
-  var btnNovoPinApagar = document.getElementById("btn-novo-pin-apagar");
-  if (btnNovoPinApagar) {
-    btnNovoPinApagar.addEventListener("click", function () {
-      if (!inputNovoPin || !inputConfirmaPin) {
-        return;
-      }
+    },
+    aoApagar: function () {
+      if (!inputNovoPin || !inputConfirmaPin) return;
       var alvo = campoNovoPinAtivo || inputNovoPin;
       if (alvo === inputConfirmaPin && inputConfirmaPin.value.length === 0 && inputNovoPin.value.length > 0) {
         campoNovoPinAtivo = inputNovoPin;
         alvo = inputNovoPin;
       }
       alvo.value = alvo.value.slice(0, -1);
-    });
-  }
+    },
+    aoLimpar: prepararPassoTrocarPin
+  });
 
   function confirmarNovoPinPessoal() {
     var novoPin = inputNovoPin ? inputNovoPin.value.trim() : "";

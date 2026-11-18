@@ -728,263 +728,228 @@
     });
   }
 
-  if (selectPerfil) {
-    selectPerfil.addEventListener("change", atualizarEstadoDominioNoModal);
+  /* ---------- Fluxos de Cadastro, Mudança Funcional e Importação CSV ---------- */
+
+  function abrirModalNovoFuncionario() {
+    formFunc.reset();
+    document.getElementById("modalFuncTitulo").textContent = "Novo Funcionário Operacional";
+    document.getElementById("func-id").value = "";
+    document.getElementById("func-perfil").value = "COLABORADOR";
+    renderizarOpcoesCargos(document.getElementById("func-cargo"), cargosDisponiveis, "Selecione o cargo...", "");
+    renderizarOpcoesFuncoes(document.getElementById("func-funcao"), funcoesDisponiveis, "Selecione a função...", "");
+
+    document.getElementById("func-tam-calcado").value = "";
+    document.getElementById("func-tam-luva").value = "";
+    document.getElementById("func-tam-vestimenta").value = "";
+    habilitacoesModal = [];
+    if (inputHabNome) {
+      renderizarOpcoesHabilitacoes(inputHabNome, habilitacoesDisponiveis, "Selecione uma habilitação / NR...", "");
+      inputHabNome.value = "";
+    }
+    if (inputHabValidade) inputHabValidade.value = "";
+    renderizarTagsHabilitacoesNoModal();
+
+    var chkTrocaPin = document.getElementById("func-exigir-troca-pin");
+    if (chkTrocaPin) chkTrocaPin.checked = true;
+    var chkGerarKit = document.getElementById("func-gerar-kit");
+    if (chkGerarKit) chkGerarKit.checked = true;
+
+    atualizarEstadoDominioNoModal();
+    if (modalBs) modalBs.show();
   }
 
-  if (btnNovoFunc) {
-    btnNovoFunc.addEventListener("click", function () {
-      formFunc.reset();
-      document.getElementById("modalFuncTitulo").textContent = "Novo Funcionário Operacional";
-      document.getElementById("func-id").value = "";
-      document.getElementById("func-perfil").value = "COLABORADOR";
-      var selectCargo = document.getElementById("func-cargo");
-      if (selectCargo) {
-        renderizarOpcoesCargos(selectCargo, cargosDisponiveis, "Selecione o cargo...", "");
-      }
-      var campoFuncao = document.getElementById("func-funcao");
-      if (campoFuncao) {
-        renderizarOpcoesFuncoes(campoFuncao, funcoesDisponiveis, "Selecione a função...", "");
-      }
-      document.getElementById("func-tam-calcado").value = "";
-      document.getElementById("func-tam-luva").value = "";
-      document.getElementById("func-tam-vestimenta").value = "";
-      habilitacoesModal = [];
-      if (inputHabNome) {
-        renderizarOpcoesHabilitacoes(inputHabNome, habilitacoesDisponiveis, "Selecione uma habilitação / NR...", "");
-        inputHabNome.value = "";
-      }
-      if (inputHabValidade) inputHabValidade.value = "";
-      renderizarTagsHabilitacoesNoModal();
+  function coletarPayloadFormularioFuncionario() {
+    var calcado = (document.getElementById("func-tam-calcado").value || "").trim();
+    var luva = (document.getElementById("func-tam-luva").value || "").trim();
+    var vestimenta = (document.getElementById("func-tam-vestimenta").value || "").trim();
+    var campoFuncao = document.getElementById("func-funcao");
 
-      var chkTrocaPin = document.getElementById("func-exigir-troca-pin");
-      if (chkTrocaPin) {
-        chkTrocaPin.checked = true;
-      }
-      var chkGerarKit = document.getElementById("func-gerar-kit");
-      if (chkGerarKit) {
-        chkGerarKit.checked = true;
-      }
-      atualizarEstadoDominioNoModal();
-      if (modalBs) {
-        modalBs.show();
-      }
-    });
+    return {
+      id: document.getElementById("func-id").value || null,
+      nome: document.getElementById("func-nome").value.trim(),
+      matricula: document.getElementById("func-matricula").value.trim(),
+      pin: document.getElementById("func-pin").value.trim(),
+      email: document.getElementById("func-email").value.trim(),
+      cargo: document.getElementById("func-cargo").value.trim(),
+      funcao: campoFuncao ? campoFuncao.value.trim() : "",
+      habilitacoes: habilitacoesModal.map(function (h) {
+        return { nome: h.nome, validade: h.validade || "" };
+      }),
+      setor_id: document.getElementById("func-setor").value || null,
+      perfil: document.getElementById("func-perfil").value,
+      tamanhos: { calcado: calcado, luva: luva, vestimenta: vestimenta },
+      tamanho_calcado: calcado,
+      tamanho_luva: luva,
+      tamanho_vestimenta: vestimenta,
+      exigir_troca_pin: document.getElementById("func-exigir-troca-pin").checked,
+      gerar_kit: document.getElementById("func-gerar-kit").checked
+    };
   }
 
-  if (formFunc) {
-    formFunc.addEventListener("submit", function (evento) {
-      evento.preventDefault();
+  function submeterFormularioFuncionario(evento) {
+    evento.preventDefault();
 
-      /* Se o usuário digitou uma habilitação no input e esqueceu de clicar em Adicionar, incorpora */
-      if (inputHabNome && inputHabNome.value.trim()) {
-        adicionarHabilitacaoPeloInput();
-      }
+    /* Se o usuário selecionou uma habilitação no dropdown e esqueceu de clicar em Adicionar, incorpora */
+    if (inputHabNome && inputHabNome.value.trim()) {
+      adicionarHabilitacaoPeloInput();
+    }
 
-      var calcado = (document.getElementById("func-tam-calcado").value || "").trim();
-      var luva = (document.getElementById("func-tam-luva").value || "").trim();
-      var vestimenta = (document.getElementById("func-tam-vestimenta").value || "").trim();
-      var exigirTrocaPin = document.getElementById("func-exigir-troca-pin").checked;
-      var gerarKit = document.getElementById("func-gerar-kit").checked;
-      var campoFuncao = document.getElementById("func-funcao");
+    SF.api.post("/api/funcionarios/salvar/", coletarPayloadFormularioFuncionario())
+      .then(function (resposta) {
+        if (!resposta.sucesso) {
+          throw new Error(resposta.erro || "Falha ao salvar funcionário.");
+        }
+        if (modalBs) modalBs.hide();
+        carregarFuncionarios();
+        carregarCargosSugeridos();
 
-      var payload = {
-        id: document.getElementById("func-id").value || null,
-        nome: document.getElementById("func-nome").value.trim(),
-        matricula: document.getElementById("func-matricula").value.trim(),
-        pin: document.getElementById("func-pin").value.trim(),
-        email: document.getElementById("func-email").value.trim(),
-        cargo: document.getElementById("func-cargo").value.trim(),
-        funcao: campoFuncao ? campoFuncao.value.trim() : "",
-        habilitacoes: habilitacoesModal.map(function (h) {
-          return { nome: h.nome, validade: h.validade || "" };
-        }),
-        setor_id: document.getElementById("func-setor").value || null,
-        perfil: document.getElementById("func-perfil").value,
-        tamanhos: {
-          calcado: calcado,
-          luva: luva,
-          vestimenta: vestimenta
-        },
-        tamanho_calcado: calcado,
-        tamanho_luva: luva,
-        tamanho_vestimenta: vestimenta,
-        exigir_troca_pin: exigirTrocaPin,
-        gerar_kit: gerarKit
-      };
+        var msgBase = resposta.mensagem || "Funcionário salvo com sucesso.";
+        var resumoKit = formatarResumoKitGerado(resposta.kit_gerado);
+        var mensagemFinal = resumoKit ? (msgBase + " " + resumoKit) : msgBase;
 
-      SF.api.post("/api/funcionarios/salvar/", payload)
-        .then(function (resposta) {
-          if (!resposta.sucesso) {
-            throw new Error(resposta.erro || "Falha ao salvar funcionário.");
-          }
-          if (modalBs) {
-            modalBs.hide();
-          }
-          carregarFuncionarios();
-          carregarCargosSugeridos();
-
-          var msgBase = resposta.mensagem || "Funcionário salvo com sucesso.";
-          var resumoKit = formatarResumoKitGerado(resposta.kit_gerado);
-          var mensagemFinal = resumoKit ? (msgBase + " " + resumoKit) : msgBase;
-
-          mostrarAvisoRh(
-            escapar(mensagemFinal),
-            (resposta.convite_enviado || (resposta.kit_gerado && resposta.kit_gerado.gerado)) ? mensagemFinal : null
-          );
-        })
-        .catch(function (erro) {
-          alert(erro.message);
-        });
-    });
+        mostrarAvisoRh(
+          escapar(mensagemFinal),
+          (resposta.convite_enviado || (resposta.kit_gerado && resposta.kit_gerado.gerado)) ? mensagemFinal : null
+        );
+      })
+      .catch(function (erro) {
+        alert(erro.message);
+      });
   }
 
-  /* Submissão do Modal de Mudança de Cargo / Função / Transferência de Setor */
-  if (formMudarFuncao) {
-    formMudarFuncao.addEventListener("submit", function (evento) {
-      evento.preventDefault();
-      var idFuncionario = document.getElementById("mudanca-func-id").value;
-      var novoCargo = document.getElementById("mudanca-novo-cargo").value.trim();
-      var campoNovaAtividade = document.getElementById("mudar-funcao-atividade");
-      var novaFuncao = campoNovaAtividade ? campoNovaAtividade.value.trim() : "";
-      var novoSetorId = document.getElementById("mudanca-novo-setor").value || null;
-      var observacao = document.getElementById("mudanca-observacao").value.trim();
-      var gerarKit = document.getElementById("mudanca-gerar-kit").checked;
+  function submeterMudancaFuncao(evento) {
+    evento.preventDefault();
+    var idFuncionario = document.getElementById("mudanca-func-id").value;
+    var novoCargo = document.getElementById("mudanca-novo-cargo").value.trim();
+    var campoNovaAtividade = document.getElementById("mudar-funcao-atividade");
+    var novaFuncao = campoNovaAtividade ? campoNovaAtividade.value.trim() : "";
+    var novoSetorId = document.getElementById("mudanca-novo-setor").value || null;
+    var observacao = document.getElementById("mudanca-observacao").value.trim();
 
-      var payload = {
-        cargo: novoCargo,
-        novo_cargo: novoCargo,
-        funcao: novaFuncao,
-        nova_funcao: novaFuncao,
-        setor_id: novoSetorId,
-        novo_setor_id: novoSetorId,
-        observacao: observacao,
-        motivo: observacao,
-        gerar_kit: gerarKit
-      };
+    var payload = {
+      cargo: novoCargo,
+      novo_cargo: novoCargo,
+      funcao: novaFuncao,
+      nova_funcao: novaFuncao,
+      setor_id: novoSetorId,
+      novo_setor_id: novoSetorId,
+      observacao: observacao,
+      motivo: observacao,
+      gerar_kit: document.getElementById("mudanca-gerar-kit").checked
+    };
 
-      SF.api.post("/api/funcionarios/" + encodeURIComponent(idFuncionario) + "/mudar-funcao/", payload)
-        .then(function (resposta) {
-          if (!resposta.sucesso) {
-            throw new Error(resposta.erro || "Falha ao registrar mudança de função.");
-          }
-          if (modalMudarFuncaoBs) {
-            modalMudarFuncaoBs.hide();
-          }
-          carregarFuncionarios();
-          carregarCargosSugeridos();
+    SF.api.post("/api/funcionarios/" + encodeURIComponent(idFuncionario) + "/mudar-funcao/", payload)
+      .then(function (resposta) {
+        if (!resposta.sucesso) {
+          throw new Error(resposta.erro || "Falha ao registrar mudança de função.");
+        }
+        if (modalMudarFuncaoBs) modalMudarFuncaoBs.hide();
+        carregarFuncionarios();
+        carregarCargosSugeridos();
 
-          var msgBase = resposta.mensagem || "Mudança de função/setor registrada com sucesso.";
-          var resumoKit = formatarResumoKitGerado(resposta.kit_gerado);
-          var mensagemFinal = resumoKit ? (msgBase + " " + resumoKit) : msgBase;
+        var msgBase = resposta.mensagem || "Mudança de função/setor registrada com sucesso.";
+        var resumoKit = formatarResumoKitGerado(resposta.kit_gerado);
+        var mensagemFinal = resumoKit ? (msgBase + " " + resumoKit) : msgBase;
 
-          mostrarAvisoRh(
-            escapar(mensagemFinal),
-            (resposta.kit_gerado && resposta.kit_gerado.gerado) ? mensagemFinal : null
-          );
-        })
-        .catch(function (erro) {
-          alert(erro.message);
-        });
-    });
+        mostrarAvisoRh(
+          escapar(mensagemFinal),
+          (resposta.kit_gerado && resposta.kit_gerado.gerado) ? mensagemFinal : null
+        );
+      })
+      .catch(function (erro) {
+        alert(erro.message);
+      });
   }
 
-  /* Modal e Leitura de Arquivo para Importação em Lote via CSV */
-  if (btnImportarCsv) {
-    btnImportarCsv.addEventListener("click", function () {
-      if (formImportarCsv) {
-        formImportarCsv.reset();
-      }
-      var chkPin = document.getElementById("csv-exigir-troca-pin");
-      if (chkPin) {
-        chkPin.checked = true;
-      }
-      var chkKit = document.getElementById("csv-gerar-kit");
-      if (chkKit) {
-        chkKit.checked = false;
-      }
-      var divResultado = document.getElementById("csv-resultado");
-      if (divResultado) {
-        divResultado.classList.add("d-none");
-        divResultado.innerHTML = "";
-      }
-      if (modalImportarCsvBs) {
-        modalImportarCsvBs.show();
-      }
-    });
+  function abrirModalImportarCsv() {
+    if (formImportarCsv) formImportarCsv.reset();
+    var chkPin = document.getElementById("csv-exigir-troca-pin");
+    if (chkPin) chkPin.checked = true;
+    var chkKit = document.getElementById("csv-gerar-kit");
+    if (chkKit) chkKit.checked = false;
+    var divResultado = document.getElementById("csv-resultado");
+    if (divResultado) {
+      divResultado.classList.add("d-none");
+      divResultado.innerHTML = "";
+    }
+    if (modalImportarCsvBs) modalImportarCsvBs.show();
   }
+
+  function renderizarResultadoImportacaoCsv(resposta) {
+    var criados = resposta.criados || 0;
+    var atualizados = resposta.atualizados || 0;
+    var erros = resposta.erros || [];
+    var divResultado = document.getElementById("csv-resultado");
+    if (!divResultado) return;
+
+    var htmlErros = "";
+    if (erros.length > 0) {
+      htmlErros =
+        '<div class="mt-2 small text-danger">' +
+          "<strong>Ocorrências (" + erros.length + "):</strong>" +
+          '<ul class="mb-0 ps-3">' +
+            erros.map(function (err) {
+              var txtErro = typeof err === "string"
+                ? err
+                : ("Linha " + (err.linha || "?") + ": " + (err.erro || err.mensagem || JSON.stringify(err)));
+              return "<li>" + escapar(txtErro) + "</li>";
+            }).join("") +
+          "</ul>" +
+        "</div>";
+    }
+
+    divResultado.className = "alert " + (erros.length > 0 ? "alert-warning" : "alert-success") + " mb-0";
+    divResultado.innerHTML =
+      "<div><strong>Importação concluída:</strong> " +
+        escapar(String(criados)) + " criado(s), " +
+        escapar(String(atualizados)) + " atualizado(s), " +
+        escapar(String(erros.length)) + " erro(s)." +
+      "</div>" +
+      htmlErros;
+  }
+
+  function submeterImportacaoCsv(evento) {
+    evento.preventDefault();
+    var textoCsv = (textareaCsvTexto ? textareaCsvTexto.value : "").trim();
+    if (!textoCsv) {
+      alert("Informe ou selecione o conteúdo CSV para importar.");
+      return;
+    }
+
+    SF.api.post("/api/funcionarios/importar-csv/", {
+      csv: textoCsv,
+      csv_texto: textoCsv,
+      conteudo: textoCsv,
+      exigir_troca_pin: document.getElementById("csv-exigir-troca-pin").checked,
+      gerar_kit: document.getElementById("csv-gerar-kit").checked
+    })
+      .then(function (resposta) {
+        renderizarResultadoImportacaoCsv(resposta);
+        carregarFuncionarios();
+        carregarCargosSugeridos();
+      })
+      .catch(function (erro) {
+        alert(erro.message);
+      });
+  }
+
+  /* ---------- Registro de Eventos da Página ---------- */
+  if (selectPerfil) selectPerfil.addEventListener("change", atualizarEstadoDominioNoModal);
+  if (btnNovoFunc) btnNovoFunc.addEventListener("click", abrirModalNovoFuncionario);
+  if (formFunc) formFunc.addEventListener("submit", submeterFormularioFuncionario);
+  if (formMudarFuncao) formMudarFuncao.addEventListener("submit", submeterMudancaFuncao);
+  if (btnImportarCsv) btnImportarCsv.addEventListener("click", abrirModalImportarCsv);
+  if (formImportarCsv) formImportarCsv.addEventListener("submit", submeterImportacaoCsv);
 
   if (inputCsvArquivo && textareaCsvTexto) {
     inputCsvArquivo.addEventListener("change", function () {
       var arquivo = this.files && this.files[0];
-      if (!arquivo) {
-        return;
-      }
+      if (!arquivo) return;
       var leitor = new FileReader();
       leitor.onload = function (e) {
         textareaCsvTexto.value = e.target.result || "";
       };
       leitor.readAsText(arquivo, "UTF-8");
-    });
-  }
-
-  if (formImportarCsv) {
-    formImportarCsv.addEventListener("submit", function (evento) {
-      evento.preventDefault();
-      var textoCsv = (textareaCsvTexto ? textareaCsvTexto.value : "").trim();
-      if (!textoCsv) {
-        alert("Informe ou selecione o conteúdo CSV para importar.");
-        return;
-      }
-      var exigirTrocaPin = document.getElementById("csv-exigir-troca-pin").checked;
-      var gerarKit = document.getElementById("csv-gerar-kit").checked;
-
-      SF.api.post("/api/funcionarios/importar-csv/", {
-        csv: textoCsv,
-        csv_texto: textoCsv,
-        conteudo: textoCsv,
-        exigir_troca_pin: exigirTrocaPin,
-        gerar_kit: gerarKit
-      })
-        .then(function (resposta) {
-          var criados = resposta.criados || 0;
-          var atualizados = resposta.atualizados || 0;
-          var erros = resposta.erros || [];
-          var divResultado = document.getElementById("csv-resultado");
-
-          var htmlErros = "";
-          if (erros.length > 0) {
-            htmlErros =
-              '<div class="mt-2 small text-danger">' +
-                "<strong>Ocorrências (" + erros.length + "):</strong>" +
-                '<ul class="mb-0 ps-3">' +
-                  erros.map(function (err) {
-                    var txtErro = typeof err === "string"
-                      ? err
-                      : ("Linha " + (err.linha || "?") + ": " + (err.erro || err.mensagem || JSON.stringify(err)));
-                    return "<li>" + escapar(txtErro) + "</li>";
-                  }).join("") +
-                "</ul>" +
-              "</div>";
-          }
-
-          if (divResultado) {
-            divResultado.className = "alert " + (erros.length > 0 ? "alert-warning" : "alert-success") + " mb-0";
-            divResultado.innerHTML =
-              "<div><strong>Importação concluída:</strong> " +
-                escapar(String(criados)) + " criado(s), " +
-                escapar(String(atualizados)) + " atualizado(s), " +
-                escapar(String(erros.length)) + " erro(s)." +
-              "</div>" +
-              htmlErros;
-          }
-
-          carregarFuncionarios();
-          carregarCargosSugeridos();
-        })
-        .catch(function (erro) {
-          alert(erro.message);
-        });
     });
   }
 
