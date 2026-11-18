@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.views.generic import RedirectView
 
 from core import views
 from core.contas import FormularioRedefinicao
@@ -12,6 +13,9 @@ def _api_totem_trocar_pin(request, *args, **kwargs):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # Navegadores pedem /favicon.ico por padrão: aponta para a logo (evita 404 no log)
+    path("favicon.ico", RedirectView.as_view(url="/static/img/logo.svg", permanent=True)),
 
     # =========================================================================
     # ROTAS DAS PÁGINAS HTML
