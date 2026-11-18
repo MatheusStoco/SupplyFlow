@@ -47,6 +47,9 @@
        ===================================================================== -->
   <main class="totem-main">
 
+    <!-- Aviso inline do totem (substitui alert() nativo do navegador) -->
+    <div class="totem-aviso alert alert-danger d-none" role="alert" id="totem-aviso" aria-live="assertive"></div>
+
     <!-- PASSO 1: BOAS-VINDAS / ESCOLHA DO MÉTODO DE IDENTIFICAÇÃO -->
     <section class="totem-passo ativo" id="passo-boas-vindas" aria-labelledby="titulo-boas-vindas">
       <div class="totem-hero-icone" aria-hidden="true">
@@ -56,29 +59,21 @@
       </div>
       <h1 class="totem-titulo" id="titulo-boas-vindas">Bem-vindo</h1>
       <p class="totem-subtitulo">
-        Identifique-se para consultar seus produtos autorizados e realizar retiradas de EPIs e materiais consumíveis.
+        Identifique-se com sua matrícula e PIN para consultar seus EPIs autorizados e registrar retiradas com rapidez.
       </p>
 
-      <div class="totem-opcoes-grid">
+      <div class="totem-opcoes-grid totem-opcoes-grid--unico">
         <button type="button" class="totem-card-opcao" id="opcao-matricula">
           <span class="totem-card-opcao__icone" aria-hidden="true">
             <i class="bi bi-person-vcard"></i>
           </span>
-          <span class="totem-card-opcao__titulo d-block">Matrícula</span>
-          <span class="totem-card-opcao__sub d-block">Digite sua matrícula de colaborador</span>
-        </button>
-
-        <button type="button" class="totem-card-opcao desabilitado" disabled aria-disabled="true">
-          <span class="totem-card-opcao__icone" aria-hidden="true">
-            <i class="bi bi-credit-card-2-front"></i>
-          </span>
-          <span class="totem-card-opcao__titulo d-block">Crachá / RFID</span>
-          <span class="totem-card-opcao__sub d-block">Indisponível no protótipo</span>
+          <span class="totem-card-opcao__titulo d-block">Entrar com Matrícula</span>
+          <span class="totem-card-opcao__sub d-block">Toque aqui para digitar sua matrícula e PIN</span>
         </button>
       </div>
 
       <footer class="text-center mt-5 text-muted small">
-        <i class="bi bi-shield-check text-success" aria-hidden="true"></i> Ambiente seguro de autoatendimento · Rastreabilidade integrada
+        <i class="bi bi-shield-check text-success" aria-hidden="true"></i> Ambiente seguro de autoatendimento · Rastreabilidade integrada · Leitura por Crachá/RFID prevista para versão industrial
       </footer>
     </section>
 
@@ -92,11 +87,17 @@
         <i class="bi bi-person-badge"></i>
       </div>
       <h2 class="totem-titulo" id="titulo-passo-matricula">Digite sua Matrícula</h2>
-      <p class="totem-subtitulo">Utilize o teclado na tela ou o leitor para informar seu código.</p>
+      <p class="totem-subtitulo">Use o teclado na tela, um atalho de prefixo ou o teclado físico/leitor.</p>
 
       <div class="totem-teclado-container">
         <label for="input-matricula" class="visually-hidden">Matrícula digitada</label>
-        <input type="text" id="input-matricula" class="totem-display-input w-100" placeholder="Sua matrícula" aria-label="Matrícula digitada" readonly>
+        <input type="text" id="input-matricula" class="totem-display-input w-100" maxlength="12" autocomplete="off" placeholder="Ex.: 1002 ou MAT-2004" aria-label="Matrícula digitada">
+
+        <div class="totem-prefixos" role="group" aria-label="Prefixos rápidos de matrícula">
+          <button type="button" class="btn btn-sm btn-outline-secondary tecla-prefixo" data-prefixo="MAT-">MAT-</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary tecla-prefixo" data-prefixo="ADM-">ADM-</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-matricula-limpar">Limpar</button>
+        </div>
 
         <div class="totem-teclado" role="group" aria-label="Teclado numérico de matrícula">
           <button type="button" class="btn-tecla tecla-num" data-val="1">1</button>
@@ -233,6 +234,20 @@
           </button>
         </div>
       </header>
+
+      <!-- Barra de filtro e busca rápida da vitrine -->
+      <section class="totem-vitrine-filtros" aria-label="Filtrar produtos da vitrine">
+        <div class="totem-filtros-chips" role="group" aria-label="Categorias rápidas">
+          <button type="button" class="totem-chip ativo" data-filtro-vitrine="todos">Todos</button>
+          <button type="button" class="totem-chip" data-filtro-vitrine="disponivel">Disponíveis</button>
+          <button type="button" class="totem-chip" data-filtro-vitrine="epi">EPIs</button>
+          <button type="button" class="totem-chip" data-filtro-vitrine="consumivel">Consumíveis</button>
+        </div>
+        <div class="totem-busca-wrap">
+          <label for="busca-vitrine" class="visually-hidden">Buscar produto na vitrine</label>
+          <input type="search" id="busca-vitrine" class="form-control form-control-sm" placeholder="Buscar EPI ou consumível...">
+        </div>
+      </section>
 
       <div class="totem-produtos-grid" id="grid-produtos-totem">
         <!-- Renderizado dinamicamente via totem.js a partir de /api/totem/produtos/ -->
@@ -375,9 +390,64 @@
           <div id="sucesso-ia-texto">Classificado como 'Dano em Serviço' com 89% de confiança.</div>
         </div>
 
-        <button type="button" class="btn btn-primary w-100 py-3 fw-bold rounded-3" id="btn-concluir-sucesso">
-          Concluir e voltar ao início (<span id="contagem-regressiva">5</span>s)
-        </button>
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-primary py-3 fw-bold rounded-3" id="btn-pedir-outro">
+            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Solicitar outro item
+          </button>
+          <button type="button" class="btn btn-outline-secondary py-2 fw-semibold rounded-3" id="btn-concluir-sucesso">
+            Concluir e sair (<span id="contagem-regressiva">8</span>s)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: CONFIRMAR RETIRADA REGULAR (PREVINE TOQUE ACIDENTAL)
+       ===================================================================== -->
+  <div class="modal fade" id="modal-confirmar-retirada" tabindex="-1" aria-labelledby="titulo-confirmar-retirada" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg">
+        <div class="modal-header border-bottom">
+          <h2 class="modal-title h5 fw-bold" id="titulo-confirmar-retirada">
+            <i class="bi bi-box-arrow-down text-primary me-1" aria-hidden="true"></i> Confirmar retirada
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-2">Confira o item antes de enviar ao almoxarifado:</p>
+          <div class="p-3 rounded-3 bg-light border">
+            <div class="fw-bold fs-5" id="conf-ret-nome">—</div>
+            <div class="small text-muted mt-1" id="conf-ret-detalhes">—</div>
+          </div>
+        </div>
+        <div class="modal-footer border-top d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary flex-fill py-2" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary flex-fill py-2 fw-bold" id="btn-confirmar-retirada-ok">
+            <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Confirmar retirada
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: CONFIRMAÇÃO GENÉRICA DO TOTEM (SUBSTITUI confirm() NATIVO)
+       ===================================================================== -->
+  <div class="modal fade" id="modal-confirmar-acao" tabindex="-1" aria-labelledby="titulo-confirmar-acao" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content shadow-lg">
+        <div class="modal-header border-bottom">
+          <h2 class="modal-title h5 fw-bold" id="titulo-confirmar-acao">Confirmar ação</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="mb-0" id="texto-confirmar-acao">Deseja continuar?</p>
+        </div>
+        <div class="modal-footer border-top d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-danger flex-fill fw-bold" id="btn-confirmar-acao-ok">Confirmar</button>
+        </div>
       </div>
     </div>
   </div>
