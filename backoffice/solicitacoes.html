@@ -27,14 +27,32 @@
           <p class="pagina-descricao">Acompanhamento e análise de solicitações excepcionais de EPIs e consumíveis.</p>
         </header>
 
-        <!-- Abas: filtram a tabela sem recarregar (solicitacoes.js) -->
-        <div class="abas" role="tablist" aria-label="Filtrar solicitações">
-          <button class="abas__botao" type="button" role="tab" id="aba-excepcionais"
-                  data-filtro="excepcionais" aria-selected="true" aria-controls="painel-solicitacoes">Excepcionais</button>
-          <button class="abas__botao" type="button" role="tab" id="aba-aguardando"
-                  data-filtro="aguardando" aria-selected="false" aria-controls="painel-solicitacoes" tabindex="-1">Aguardando análise</button>
-          <button class="abas__botao" type="button" role="tab" id="aba-todas"
-                  data-filtro="todas" aria-selected="false" aria-controls="painel-solicitacoes" tabindex="-1">Todas</button>
+        <!-- Abas e busca rápida: filtram a tabela sem recarregar (solicitacoes.js) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div class="abas mb-0" role="tablist" aria-label="Filtrar solicitações">
+            <button class="abas__botao" type="button" role="tab" id="aba-aguardando"
+                    data-filtro="aguardando" aria-selected="true" aria-controls="painel-solicitacoes">
+              Aguardando análise <span class="abas__contador" id="cont-aguardando">0</span>
+            </button>
+            <button class="abas__botao" type="button" role="tab" id="aba-excepcionais"
+                    data-filtro="excepcionais" aria-selected="false" aria-controls="painel-solicitacoes" tabindex="-1">
+              Excepcionais <span class="abas__contador" id="cont-excepcionais">0</span>
+            </button>
+            <button class="abas__botao" type="button" role="tab" id="aba-todas"
+                    data-filtro="todas" aria-selected="false" aria-controls="painel-solicitacoes" tabindex="-1">
+              Todas <span class="abas__contador" id="cont-todas">0</span>
+            </button>
+          </div>
+          <div class="busca-rapida-lista">
+            <label for="filtro-busca-solicitacoes" class="visually-hidden">Buscar solicitação</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text input-group-text--escuro border-end-0" aria-hidden="true">
+                <i class="bi bi-search text-muted"></i>
+              </span>
+              <input type="search" id="filtro-busca-solicitacoes" class="form-control form-control-sm border-start-0"
+                     placeholder="Buscar por código, funcionário ou EPI...">
+            </div>
+          </div>
         </div>
 
         <section class="cartao" id="painel-solicitacoes" role="tabpanel" aria-labelledby="aba-excepcionais">

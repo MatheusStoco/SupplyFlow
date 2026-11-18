@@ -41,7 +41,13 @@
     }).join("");
   }
 
+  function ocultarCarregamento() {
+    var el = obterElemento("carregando-detalhe");
+    if (el) el.classList.add("d-none");
+  }
+
   function mostrarTelaNaoEncontrada(mensagemPersonalizada) {
+    ocultarCarregamento();
     obterElemento("conteudo-detalhe").classList.add("d-none");
     obterElemento("nao-encontrada").classList.remove("d-none");
     if (mensagemPersonalizada) {
@@ -60,6 +66,7 @@
   }
 
   function renderizarSolicitacao(solicitacao, categoriasDisponiveis) {
+    ocultarCarregamento();
     solicitacaoAtual = solicitacao;
     obterElemento("conteudo-detalhe").classList.remove("d-none");
     document.title = "Solicitação " + solicitacao.codigo + " · SupplyFlow";
@@ -241,8 +248,54 @@
       );
     }
 
-    caixaResultadoDecisao.innerHTML = '<div class="alert alert-light border mb-0">' + linhasResumo.join("<br>") + "</div>";
+    var botoesPosDecisao = [
+      '<a class="btn btn-sm btn-outline-secondary" href="solicitacoes.html"><i class="bi bi-list-ul me-1" aria-hidden="true"></i>Voltar à lista</a>'
+    ];
+    if (solicitacao.status === "aprovada" || solicitacao.status === "aprovada-condicao") {
+      botoesPosDecisao.unshift(
+        '<a class="btn btn-sm btn-outline-primary" href="entregas.html"><i class="bi bi-box-arrow-up me-1" aria-hidden="true"></i>Ir para Entregas</a>'
+      );
+    }
+
+    caixaResultadoDecisao.innerHTML =
+      '<div class="caixa-superficie border rounded-3 p-3">' +
+        '<div class="mb-3">' + linhasResumo.join("<br>") + "</div>" +
+        '<div class="d-flex flex-wrap gap-2" id="acoes-pos-decisao">' + botoesPosDecisao.join("") + "</div>" +
+      "</div>";
     caixaResultadoDecisao.classList.remove("d-none");
+    carregarAtalhoProximaPendente(solicitacao.id);
+  }
+
+  function carregarAtalhoProximaPendente(idAtual) {
+    SF.api.get("/api/solicitacoes/")
+      .then(function (dados) {
+        var proxima = (dados.solicitacoes || []).find(function (item) {
+          return item.status === "aguardando" && item.id !== idAtual;
+        });
+        var barra = obterElemento("acoes-pos-decisao");
+        if (!proxima || !barra) return;
+        var link = document.createElement("a");
+        link.className = "btn btn-sm btn-primary";
+        link.href = "solicitacao.html?id=" + encodeURIComponent(proxima.id);
+        link.innerHTML = 'Próxima aguardando (' + escapar(proxima.numero || proxima.codigo || "") + ') <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>';
+        barra.insertBefore(link, barra.firstChild);
+      })
+      .catch(function () {});
+  }
+
+  function sincronizarEstadoBotoesComDevolucao() {
+    var chk = obterElemento("exigir-devolucao");
+    var btnAprovar = document.querySelector('[data-decisao="aprovar"]');
+    var btnCondicao = document.querySelector('[data-decisao="aprovar_condicao"]');
+    if (!chk || !btnAprovar || !btnCondicao) return;
+    var marcada = chk.checked;
+    btnAprovar.disabled = marcada;
+    btnCondicao.classList.toggle("btn-decisao--destaque", marcada);
+  }
+
+  var chkDevolucaoEl = obterElemento("exigir-devolucao");
+  if (chkDevolucaoEl) {
+    chkDevolucaoEl.addEventListener("change", sincronizarEstadoBotoesComDevolucao);
   }
 
   /* ---------- Validação e Envio da Decisão ---------- */

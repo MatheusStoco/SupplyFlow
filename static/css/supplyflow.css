@@ -541,6 +541,36 @@ body {
   border-color: var(--sf-borda) !important;
 }
 
+.abas__contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  margin-left: 0.35rem;
+  border-radius: var(--sf-raio-xs);
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--sf-texto-secundario);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.abas__botao[aria-selected="true"] .abas__contador {
+  background: rgba(249, 115, 22, 0.22);
+  color: #fb923c;
+}
+
+.busca-rapida-lista {
+  flex: 1 1 16rem;
+  max-width: 22rem;
+}
+
+.btn-decisao--destaque {
+  box-shadow: 0 0 0 2px #0b0f17, 0 0 0 4px var(--sf-laranja);
+}
+
 .usuario__texto {
   flex: 1 1 auto;
   min-width: 0;

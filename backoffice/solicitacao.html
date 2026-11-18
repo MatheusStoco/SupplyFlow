@@ -24,6 +24,12 @@
       <main class="conteudo">
         <a class="link-voltar" href="solicitacoes.html"><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar para solicitações</a>
 
+        <!-- Estado de carregamento enquanto consulta a API -->
+        <section class="cartao vazio" id="carregando-detalhe" role="status" aria-live="polite">
+          <div class="spinner-border text-primary mb-2" aria-hidden="true"></div>
+          <p class="mb-0 text-muted">Carregando detalhes da solicitação…</p>
+        </section>
+
         <!-- Mostrado quando o id do endereço não existe -->
         <section class="cartao vazio d-none" id="nao-encontrada">
           <span class="vazio__icone tom-ambar" aria-hidden="true"><i class="bi bi-search"></i></span>

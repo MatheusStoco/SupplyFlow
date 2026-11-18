@@ -50,8 +50,32 @@
   var corpoTabela = document.getElementById("corpo-tabela");
   var legendaTabela = document.getElementById("legenda-tabela");
   var resumoFiltro = document.getElementById("resumo-filtro");
+  var inputBusca = document.getElementById("filtro-busca-solicitacoes");
   var abaAtiva = botoesAbas[0];
   var solicitacoes = [];
+
+  function atualizarContadoresAbas() {
+    var mapa = {
+      aguardando: document.getElementById("cont-aguardando"),
+      excepcionais: document.getElementById("cont-excepcionais"),
+      todas: document.getElementById("cont-todas")
+    };
+    Object.keys(mapa).forEach(function (chave) {
+      if (mapa[chave]) {
+        mapa[chave].textContent = String(solicitacoes.filter(FILTROS_ABAS[chave].mostra).length);
+      }
+    });
+  }
+
+  function correspondeBusca(solicitacao, termo) {
+    if (!termo) return true;
+    var nome = solicitacao.funcionario || (solicitacao.solicitante && solicitacao.solicitante.nome) || "";
+    var codigo = solicitacao.numero || solicitacao.codigo || "";
+    var alvo = [
+      codigo, nome, solicitacao.funcao, solicitacao.centroCusto, solicitacao.produto, solicitacao.motivo
+    ].join(" ").toLowerCase();
+    return alvo.indexOf(termo) !== -1;
+  }
 
   /* ---------- Formatação de uma Linha da Tabela ---------- */
   function criarHtmlClassificacaoIa(solicitacao) {
@@ -120,7 +144,10 @@
     abaAtiva = abaSelecionada;
 
     var configuracaoFiltro = FILTROS_ABAS[abaSelecionada.dataset.filtro] || FILTROS_ABAS.todas;
-    var listaFiltrada = solicitacoes.filter(configuracaoFiltro.mostra);
+    var termoBusca = inputBusca ? inputBusca.value.trim().toLowerCase() : "";
+    var listaFiltrada = solicitacoes.filter(function (item) {
+      return configuracaoFiltro.mostra(item) && correspondeBusca(item, termoBusca);
+    });
 
     botoesAbas.forEach(function (botaoAba) {
       var ehAbaAtiva = (botaoAba === abaSelecionada);
@@ -178,6 +205,12 @@
     });
   });
 
+  if (inputBusca) {
+    inputBusca.addEventListener("input", function () {
+      mostrarAba(abaAtiva || botoesAbas[0]);
+    });
+  }
+
   if (corpoTabela) {
     corpoTabela.innerHTML = '<tr><td colspan="10" class="tabela-solicitacoes__vazio">Carregando solicitações do sistema...</td></tr>';
   }
@@ -185,7 +218,12 @@
   SF.api.get("/api/solicitacoes/")
     .then(function (dados) {
       solicitacoes = dados.solicitacoes || [];
-      mostrarAba(abaAtiva || botoesAbas[0]);
+      atualizarContadoresAbas();
+      var temAguardando = solicitacoes.some(FILTROS_ABAS.aguardando.mostra);
+      var abaInicial = temAguardando
+        ? (document.getElementById("aba-aguardando") || botoesAbas[0])
+        : (document.getElementById("aba-excepcionais") || botoesAbas[0]);
+      mostrarAba(abaInicial);
     })
     .catch(function (erro) {
       corpoTabela.innerHTML =
