@@ -313,6 +313,11 @@ body {
   line-height: 1.25;
 }
 
+/* "Flow" em Laranja Segurança, como na logo oficial */
+.marca__destaque {
+  color: var(--sf-laranja);
+}
+
 .marca__sub {
   display: block;
   color: var(--sf-texto-suave);
