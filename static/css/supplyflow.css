@@ -477,6 +477,31 @@ body {
   font-weight: 700;
 }
 
+.usuario__avatar--compacto {
+  width: 2.125rem;
+  height: 2.125rem;
+  font-size: 0.75rem;
+}
+
+.btn-close--mini {
+  font-size: 0.55rem;
+}
+
+.icone-consumo {
+  color: #0d9488;
+}
+
+.input-group-text--escuro {
+  background-color: #0e1522;
+  border-color: var(--sf-borda);
+  color: var(--sf-texto-suave);
+}
+
+.caixa-superficie {
+  background-color: var(--sf-superficie-sutil);
+  border-color: var(--sf-borda) !important;
+}
+
 .usuario__texto {
   flex: 1 1 auto;
   min-width: 0;
@@ -1586,8 +1611,14 @@ body {
   text-align: center;
 }
 
-.matriz__acerto { background: rgba(4, 120, 87, var(--intensidade)); }
-.matriz__erro   { background: rgba(220, 38, 38, var(--intensidade)); }
+.matriz__nivel-1 { --intensidade: 0.25; }
+.matriz__nivel-2 { --intensidade: 0.45; }
+.matriz__nivel-3 { --intensidade: 0.65; }
+.matriz__nivel-4 { --intensidade: 0.85; }
+.matriz__nivel-5 { --intensidade: 1; }
+
+.matriz__acerto { background: rgba(4, 120, 87, var(--intensidade, 0)); }
+.matriz__erro   { background: rgba(220, 38, 38, var(--intensidade, 0)); }
 .matriz__forte  { color: #ffffff; }
 
 /* =====================================================================

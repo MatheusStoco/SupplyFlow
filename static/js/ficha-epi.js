@@ -432,6 +432,12 @@
     });
   }
 
+  document.querySelectorAll('[data-acao="imprimir"]').forEach(function (botao) {
+    botao.addEventListener("click", function () {
+      window.print();
+    });
+  });
+
   checkboxMostrarTodos.addEventListener("change", carregar);
   carregar();
 })();

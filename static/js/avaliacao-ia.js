@@ -99,6 +99,8 @@
         if (contagem > 0) {
           classeCor = (indiceReal === indiceSugerido) ? " matriz__acerto" : " matriz__erro";
           opacidadeFundo = 0.15 + (0.85 * contagem / maiorValorCelula);
+          var nivelIntensidade = Math.min(5, Math.max(1, Math.ceil(opacidadeFundo * 5)));
+          classeCor += " matriz__nivel-" + nivelIntensidade;
           /* Usa texto branco apenas quando o fundo fica escuro para garantir contraste de leitura */
           if (opacidadeFundo > 0.55) {
             classeCor += " matriz__forte";
@@ -110,7 +112,6 @@
 
         return (
           '<td class="matriz__celula' + classeCor + '"' +
-              ' style="--intensidade:' + opacidadeFundo.toFixed(2) + '"' +
               ' title="' + dicaCelula + '">' +
             textoCelula +
           "</td>"

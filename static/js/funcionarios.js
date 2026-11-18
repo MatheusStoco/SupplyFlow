@@ -85,7 +85,7 @@
       return (
         '<span class="badge ' + classeCor + ' border d-inline-flex align-items-center gap-1 py-1 px-2">' +
           "<span>" + escapar(hab.nome) + textoVal + "</span>" +
-          '<button type="button" class="btn-close" style="font-size:0.55rem;" data-rem-hab="' + idx + '"' +
+          '<button type="button" class="btn-close btn-close--mini" data-rem-hab="' + idx + '"' +
                   ' aria-label="Remover habilitação ' + escapar(hab.nome) + '"></button>' +
         "</span>"
       );
@@ -447,7 +447,7 @@
       "<tr>" +
         "<td>" +
           '<div class="d-flex align-items-center gap-2">' +
-            '<span class="usuario__avatar" style="width:34px;height:34px;font-size:12px;" aria-hidden="true">' +
+            '<span class="usuario__avatar usuario__avatar--compacto" aria-hidden="true">' +
               escapar(funcionario.iniciais) +
             "</span>" +
             "<div>" +
