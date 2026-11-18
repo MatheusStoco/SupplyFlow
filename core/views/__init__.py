@@ -2,7 +2,11 @@
 from .paginas import *  # noqa: F401,F403
 from .totem import *  # noqa: F401,F403
 from .solicitacoes import *  # noqa: F401,F403
-from .cadastros import *  # noqa: F401,F403
+from .funcionarios import *  # noqa: F401,F403
+from .produtos import *  # noqa: F401,F403
+from .organizacao import *  # noqa: F401,F403
+from .politicas import *  # noqa: F401,F403
+from .cargos import *  # noqa: F401,F403
 from .estoque import *  # noqa: F401,F403
 from .ia import *  # noqa: F401,F403
 from .entregas import *  # noqa: F401,F403
