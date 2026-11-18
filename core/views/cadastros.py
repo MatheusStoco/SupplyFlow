@@ -25,7 +25,8 @@ from ..models import (
     Totem,
     Usuario,
 )
-from ..permissoes import PERFIS, PERFIS_BACKOFFICE, api_backoffice
+from ..permissoes import PERFIS, PERFIS_BACKOFFICE, api_backoffice, pode
+from ..servicos.empresa import obter_dados_empresa, salvar_dados_empresa, validar_cnpj
 from ..seguranca import definir_pin, validar_novo_pin
 from ..servicos import RegraViolada, estados, rh
 from ..servicos import solicitacoes as servico_solicitacoes
@@ -990,21 +991,6 @@ def api_toggle_setor(request, setor_id):
 # ============================================================================
 # FORNECEDORES (RF-05)
 # ============================================================================
-def _cnpj_valido(cnpj):
-    numeros = re.sub(r"\D", "", cnpj or "")
-    if len(numeros) != 14 or numeros == numeros[0] * 14:
-        return None
-
-    def digito(base):
-        pesos = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2][-len(base):]
-        resto = sum(int(n) * p for n, p in zip(base, pesos)) % 11
-        return "0" if resto < 2 else str(11 - resto)
-
-    if digito(numeros[:12]) != numeros[12] or digito(numeros[:13]) != numeros[13]:
-        return None
-    return f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:8]}/{numeros[8:12]}-{numeros[12:]}"
-
-
 @require_GET
 @api_backoffice("ver")
 def api_listar_fornecedores(request):
@@ -1030,7 +1016,7 @@ def api_salvar_fornecedor(request):
         contato = texto(dados.get("contato"), "Contato", maximo=100)
     except EntradaInvalida as e:
         return erro(str(e))
-    cnpj = _cnpj_valido(dados.get("cnpj"))
+    cnpj = validar_cnpj(dados.get("cnpj"))
     if not cnpj:
         return erro("CNPJ inválido.")
     if email:
@@ -1061,6 +1047,49 @@ def api_toggle_fornecedor(request, fornecedor_id):
     forn.save(update_fields=["ativo"])
     registrar(request, "FORNECEDOR_ATIVADO" if forn.ativo else "FORNECEDOR_INATIVADO", forn, forn.razao_social)
     return JsonResponse({"sucesso": True, "ativo": forn.ativo})
+
+
+# ============================================================================
+# CONFIGURA??O DO TENANT / EMPRESA EMPREGADORA (NR-6)
+# ============================================================================
+@require_GET
+@api_backoffice("ver")
+def api_obter_empresa(request):
+    """Retorna os dados cadastrais da empresa (tenant inicial) para documentos legais."""
+    return JsonResponse({
+        "empresa": obter_dados_empresa(),
+        "pode_editar": pode(request.usuario, "auditoria"),
+    })
+
+
+@require_POST
+@api_backoffice("auditoria")
+def api_salvar_empresa(request):
+    """Salva Raz?o Social, CNPJ e endere?o do tenant inicial (somente Administrador)."""
+    dados, erro_json = ler_json(request)
+    if erro_json:
+        return erro_json
+    try:
+        razao = texto(dados.get("razao_social"), "Raz?o social", obrigatorio=True, maximo=150)
+        fantasia = texto(dados.get("nome_fantasia"), "Nome fantasia", maximo=150)
+        estabelecimento = texto(dados.get("estabelecimento"), "Estabelecimento", maximo=150)
+        endereco = texto(dados.get("endereco"), "Endere?o", maximo=250)
+        cidade = texto(dados.get("cidade"), "Cidade/UF", maximo=100)
+    except EntradaInvalida as e:
+        return erro(str(e))
+    cnpj = validar_cnpj(dados.get("cnpj"))
+    if not cnpj:
+        return erro("Informe um CNPJ v?lido no formato 00.000.000/0000-00.")
+    empresa = salvar_dados_empresa(
+        request,
+        razao_social=razao,
+        cnpj=cnpj,
+        nome_fantasia=fantasia,
+        estabelecimento=estabelecimento,
+        endereco=endereco,
+        cidade=cidade,
+    )
+    return JsonResponse({"sucesso": True, "mensagem": "Dados da empresa salvos com sucesso.", "empresa": empresa})
 
 
 # ============================================================================

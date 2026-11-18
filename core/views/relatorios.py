@@ -20,6 +20,7 @@ from ..models import (DecisaoSolicitacao, Devolucao, Entrega, MovimentacaoEstoqu
                       Usuario)
 from ..permissoes import api_backoffice
 from ..servicos import estados, rh
+from ..servicos.empresa import obter_dados_empresa
 from .cadastros import _catalogo_cargos
 from .util import erro, fmt
 
@@ -236,6 +237,8 @@ def api_ficha_epi(request, funcionario_id):
     linhas = [
         {
             "data": fmt(e.data, "%d/%m/%Y"),
+            "data_hora": fmt(e.data, "%d/%m/%Y %H:%M"),
+            "autenticacao_pin": bool(e.solicitacao_id),
             "produto": e.produto_nome,
             "ca": e.ca or "",
             "lote": e.lote or "",
@@ -260,9 +263,15 @@ def api_ficha_epi(request, funcionario_id):
 
     ficha_rh = rh.obter_ficha_rh(colaborador)
     desligamento = rh.resumo_desligamento(colaborador)
+    data_admissao = next(
+        (h.get("data", "").split(" ")[0] for h in ficha_rh.get("historico_funcional", []) if h.get("acao") == "ADMISSAO"),
+        "",
+    )
 
     registrar(request, "FICHA_EPI_CONSULTADA", colaborador, f"Consultou a ficha de EPI de {colaborador.nome}")
     return JsonResponse({
+        "empresa": obter_dados_empresa(),
+        "pode_editar_empresa": pode(request.usuario, "auditoria"),
         "funcionario": {
             "nome": colaborador.nome,
             "matricula": colaborador.codigo_matricula,
@@ -272,6 +281,7 @@ def api_ficha_epi(request, funcionario_id):
             "setor": colaborador.setor.nome if colaborador.setor else "",
             "centro_custo": colaborador.setor.centro_custo if colaborador.setor else "",
             "ativo": colaborador.ativo,
+            "data_admissao": data_admissao,
             "tamanhos": ficha_rh["tamanhos"],
         },
         "entregas": linhas,

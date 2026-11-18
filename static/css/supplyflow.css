@@ -1956,22 +1956,240 @@ code {
   color: #94a3b8 !important;
 }
 
+.solo-impressao,
+.solo-impressao-celula {
+  display: none;
+}
+
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
   .sidebar-trilho,
   .topbar,
   .nao-imprimir {
     display: none !important;
   }
-  .conteudo {
-    max-width: 100%;
-    padding: 0;
+
+  .solo-impressao {
+    display: block !important;
   }
+
+  .solo-impressao-celula {
+    display: table-cell !important;
+  }
+
+  html,
+  body,
+  .app,
+  .app__principal,
+  .conteudo {
+    background: #ffffff !important;
+    color: #000000 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 9pt !important;
+  }
+
   .cartao {
-    border-color: #999999;
-    box-shadow: none;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #222222 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin-bottom: 8px !important;
+    break-inside: auto;
+  }
+
+  .cartao__cabecalho {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+    border-bottom: 1px solid #222222 !important;
+    padding: 5px 8px !important;
+  }
+
+  .cartao__titulo {
+    color: #000000 !important;
+    font-size: 9.5pt !important;
+    font-weight: 700 !important;
+  }
+
+  .cartao__corpo {
+    padding: 6px 8px !important;
+    color: #000000 !important;
+  }
+
+  .dados--linha {
+    gap: 6px 14px !important;
+  }
+
+  .dados dt {
+    color: #333333 !important;
+    font-size: 7.5pt !important;
+  }
+
+  .dados dd {
+    color: #000000 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .table-responsive {
+    overflow: visible !important;
+  }
+
+  .tabela-solicitacoes {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .tabela-solicitacoes thead {
+    display: table-header-group;
+  }
+
+  .tabela-solicitacoes tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .tabela-solicitacoes th,
+  .tabela-solicitacoes td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #444444 !important;
+    padding: 4px 5px !important;
+    font-size: 7.6pt !important;
+    line-height: 1.25 !important;
+    vertical-align: top !important;
+  }
+
+  .tabela-solicitacoes th {
+    background: #e2e8f0 !important;
+    font-weight: 700 !important;
+  }
+
+  .tabela-solicitacoes td .text-muted,
+  .tabela-solicitacoes td .text-secondary,
+  .text-muted,
+  .text-secondary {
+    color: #333333 !important;
+  }
+
+  .badge {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #444444 !important;
+    font-size: 7pt !important;
+  }
+
+  .alert {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #222222 !important;
+  }
+
+  /* Blocos Oficiais NR-6 */
+  .ficha-nr6-cabecalho {
+    border: 1.5px solid #000000;
+    padding: 8px 10px;
+    margin-bottom: 8px;
     break-inside: avoid;
   }
-  body {
-    background: #ffffff;
+
+  .ficha-nr6-cabecalho__topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 5px;
+    margin-bottom: 6px;
+  }
+
+  .ficha-nr6-cabecalho__titulo {
+    font-size: 11pt;
+    font-weight: 700;
+  }
+
+  .ficha-nr6-cabecalho__sub {
+    font-size: 8pt;
+    color: #333333;
+  }
+
+  .ficha-nr6-cabecalho__emissao {
+    font-size: 8pt;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .ficha-nr6-cabecalho__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+    font-size: 8.5pt;
+  }
+
+  .ficha-nr6-termo {
+    border: 1px solid #222222;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    break-inside: avoid;
+  }
+
+  .ficha-nr6-termo h2 {
+    font-size: 8.5pt;
+    font-weight: 700;
+    margin: 0 0 3px 0;
+  }
+
+  .ficha-nr6-termo p {
+    font-size: 7.8pt;
+    line-height: 1.35;
+    margin: 0;
+    text-align: justify;
+  }
+
+  .ficha-nr6-comprovacao {
+    white-space: nowrap;
+    font-size: 7.2pt !important;
+  }
+
+  .ficha-nr6-rubrica {
+    display: block;
+    margin-top: 6px;
+  }
+
+  .ficha-nr6-rodape {
+    margin-top: 14px;
+    border-top: 1px solid #222222;
+    padding-top: 8px;
+    break-inside: avoid;
+  }
+
+  .ficha-nr6-rodape__local {
+    font-size: 8.5pt;
+    margin-bottom: 22px;
+  }
+
+  .ficha-nr6-rodape__assinaturas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    text-align: center;
+    font-size: 8pt;
+  }
+
+  .ficha-nr6-rodape__bloco strong,
+  .ficha-nr6-rodape__bloco span {
+    display: block;
+  }
+
+  .ficha-nr6-rodape__linha {
+    border-top: 1px solid #000000;
+    margin: 0 12px 4px 12px;
   }
 }
