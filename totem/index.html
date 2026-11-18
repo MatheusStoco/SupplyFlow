@@ -32,14 +32,14 @@
       </div>
     </div>
 
-    <div class="totem-header__acoes">
+    <nav class="totem-header__acoes" aria-label="Ações do totem">
       <a href="/index.html" class="btn btn-outline-secondary btn-sm" aria-label="Ir para o backoffice">
         <i class="bi bi-box-arrow-left" aria-hidden="true"></i><span class="totem-header__texto"> Backoffice</span>
       </a>
       <button type="button" class="btn-reiniciar" id="btn-reiniciar-sessao" aria-label="Reiniciar sessão">
         <i class="bi bi-house-door" aria-hidden="true"></i><span class="totem-header__texto">Reiniciar sessão</span>
       </button>
-    </div>
+    </nav>
   </header>
 
   <!-- =====================================================================
@@ -77,9 +77,9 @@
         </button>
       </div>
 
-      <div class="text-center mt-5 text-muted small">
+      <footer class="text-center mt-5 text-muted small">
         <i class="bi bi-shield-check text-success" aria-hidden="true"></i> Ambiente seguro de autoatendimento · Rastreabilidade integrada
-      </div>
+      </footer>
     </section>
 
     <!-- PASSO 2: DIGITAÇÃO DA MATRÍCULA -->
@@ -178,7 +178,8 @@
       </p>
 
       <div class="totem-teclado-container">
-        <div class="row g-2 mb-3">
+        <fieldset class="row g-2 mb-3">
+          <legend class="visually-hidden">Definição do novo PIN pessoal</legend>
           <div class="col-6">
             <label for="input-novo-pin" class="form-label small fw-semibold mb-1">Novo PIN (4 a 6 dígitos)</label>
             <input type="password" id="input-novo-pin" class="form-control text-center fw-bold fs-4"
@@ -189,7 +190,7 @@
             <input type="password" id="input-confirma-pin" class="form-control text-center fw-bold fs-4"
                    inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
           </div>
-        </div>
+        </fieldset>
 
         <div class="totem-teclado mb-3" role="group" aria-label="Teclado numérico para criação do novo PIN">
           <button type="button" class="btn-tecla tecla-novo-pin" data-val="1">1</button>
@@ -216,7 +217,7 @@
 
     <!-- PASSO 4: VITRINE DE PRODUTOS DISPONÍVEIS -->
     <section class="totem-passo" id="passo-vitrine" aria-label="Vitrine de produtos disponíveis">
-      <div class="totem-vitrine-topo">
+      <header class="totem-vitrine-topo">
         <div class="totem-vitrine-usuario">
           <h2>Olá, <span id="vitrine-nome">Colaborador</span>!</h2>
           <p>
@@ -231,7 +232,7 @@
             <span class="badge-sols-count" id="count-minhas-sols">0</span>
           </button>
         </div>
-      </div>
+      </header>
 
       <div class="totem-produtos-grid" id="grid-produtos-totem">
         <!-- Renderizado dinamicamente via totem.js a partir de /api/totem/produtos/ -->
@@ -244,16 +245,16 @@
         <i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar aos produtos
       </button>
 
-      <div class="totem-alerta-substituicao">
+      <aside class="totem-alerta-substituicao" role="alert">
         <div class="totem-alerta-substituicao__titulo">
           <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Substituição antecipada
         </div>
         <p class="totem-alerta-substituicao__texto">
           Este EPI está fora do período regular de retirada ou acima do limite mensal. Informe o motivo detalhado para análise técnica pelo gestor.
         </p>
-      </div>
+      </aside>
 
-      <div class="totem-card-resumo-produto">
+      <article class="totem-card-resumo-produto" aria-label="Resumo do produto selecionado">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <div>
             <h3 class="h5 fw-bold mb-1" id="just-prod-nome">Luva Nitrílica Anticorte</h3>
@@ -272,42 +273,45 @@
             <div class="fw-bold" id="just-prod-proxima">15/11/2026</div>
           </div>
         </div>
-      </div>
+      </article>
 
-      <div class="card p-4 border-0 shadow-sm rounded-4">
-        <label for="texto-justificativa" class="form-label fw-bold mb-2">
-          Justificativa da substituição antecipada
-        </label>
+      <form class="card p-4 border-0 shadow-sm rounded-4" id="form-justificativa" novalidate>
+        <fieldset>
+          <legend class="form-label fw-bold mb-2">
+            Justificativa da substituição antecipada
+          </legend>
 
-        <!-- Sugestões rápidas de preenchimento para facilitar no totem touch -->
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="A luva rasgou durante o trabalho com chapa metálica afiada na linha 2.">
-            Rasgou em serviço
-          </button>
-          <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="O equipamento endureceu e perdeu a vedação antes do prazo normal.">
-            Desgaste prematuro
-          </button>
-          <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Material extraviado acidentalmente durante deslocamento operacional.">
-            Extravio / Perda
-          </button>
-          <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Manutenção corretiva emergencial consumiu mais unidades que a cota padrão.">
-            Demanda emergencial
-          </button>
-          <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Solicito outro tamanho pois a modelagem deste lote ficou inadequada para o uso seguro.">
-            Outro tamanho / modelagem
-          </button>
-        </div>
+          <!-- Sugestões rápidas de preenchimento para facilitar no totem touch -->
+          <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Sugestões rápidas de justificativa">
+            <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="A luva rasgou durante o trabalho com chapa metálica afiada na linha 2.">
+              Rasgou em serviço
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="O equipamento endureceu e perdeu a vedação antes do prazo normal.">
+              Desgaste prematuro
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Material extraviado acidentalmente durante deslocamento operacional.">
+              Extravio / Perda
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Manutenção corretiva emergencial consumiu mais unidades que a cota padrão.">
+              Demanda emergencial
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm chip-sugestao" data-texto="Solicito outro tamanho pois a modelagem deste lote ficou inadequada para o uso seguro.">
+              Outro tamanho / modelagem
+            </button>
+          </div>
 
-        <textarea id="texto-justificativa" class="form-control totem-textarea-justificativa" rows="4"
-                  placeholder="Descreva o motivo (ex.: A luva rasgou durante o trabalho com uma peça metálica afiada...)"></textarea>
+          <label for="texto-justificativa" class="visually-hidden">Descrição da justificativa</label>
+          <textarea id="texto-justificativa" class="form-control totem-textarea-justificativa" rows="4"
+                    placeholder="Descreva o motivo (ex.: A luva rasgou durante o trabalho com uma peça metálica afiada...)"></textarea>
+        </fieldset>
 
-        <div class="d-flex justify-content-end gap-3 mt-4">
+        <footer class="d-flex justify-content-end gap-3 mt-4">
           <button type="button" class="btn btn-light px-4 btn-voltar" data-destino="passo-vitrine">Cancelar</button>
           <button type="button" class="btn btn-primary px-4 fw-bold" id="btn-enviar-justificativa">
             <i class="bi bi-send-check" aria-hidden="true"></i> Confirmar e enviar solicitação
           </button>
-        </div>
-      </div>
+        </footer>
+      </form>
     </section>
 
   </main>
@@ -319,9 +323,9 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content rounded-4 border-0 shadow">
         <div class="modal-header border-bottom">
-          <h5 class="modal-title fw-bold" id="modalSolsTitulo">
+          <h2 class="modal-title h5 fw-bold" id="modalSolsTitulo">
             <i class="bi bi-clock-history text-primary" aria-hidden="true"></i> Minhas Solicitações Recentes
-          </h5>
+          </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body p-0">
@@ -361,7 +365,7 @@
             <i class="bi bi-check-lg"></i>
           </div>
         </div>
-        <h3 class="fw-bold mb-2" id="sucesso-titulo">Solicitação Registrada!</h3>
+        <h2 class="h3 fw-bold mb-2" id="sucesso-titulo">Solicitação Registrada!</h2>
         <p class="text-muted mb-4" id="sucesso-mensagem">
           Solicitação enviada com sucesso! Sua solicitação foi encaminhada para a análise do gestor/almoxarifado.
         </p>

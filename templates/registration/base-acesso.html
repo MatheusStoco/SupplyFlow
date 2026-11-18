@@ -12,22 +12,26 @@
 </head>
 <body>
   <main class="login">
-    <section class="login__marca">
-      <a class="marca" href="/">
-        <span class="marca__icone" aria-hidden="true">
-          <!-- Símbolo SupplyFlow: o S é o caminho do material (ponto = estoque, seta = entrega) -->
-          <svg viewBox="6.5 7 51 51" fill="none"><path d="M43 13H27a9 9 0 0 0 0 18h10a9 9 0 0 1 0 18H25" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 41.5L15.5 49 26 56.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="43" cy="13" r="5.5" fill="currentColor"/></svg>
-        </span>
-        <span><span class="marca__nome">Supply<span class="marca__destaque">Flow</span></span><span class="marca__sub">Gestão de EPIs e consumíveis</span></span>
-      </a>
-      <div class="login__apresentacao">
+    <section class="login__marca" aria-label="Sobre o acesso">
+      <header>
+        <a class="marca" href="/">
+          <span class="marca__icone" aria-hidden="true">
+            <!-- Símbolo SupplyFlow: o S é o caminho do material (ponto = estoque, seta = entrega) -->
+            <svg viewBox="6.5 7 51 51" fill="none"><path d="M43 13H27a9 9 0 0 0 0 18h10a9 9 0 0 1 0 18H25" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 41.5L15.5 49 26 56.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="43" cy="13" r="5.5" fill="currentColor"/></svg>
+          </span>
+          <span><span class="marca__nome">Supply<span class="marca__destaque">Flow</span></span><span class="marca__sub">Gestão de EPIs e consumíveis</span></span>
+        </a>
+      </header>
+      <article class="login__apresentacao">
         <h1>Acesso ao backoffice</h1>
         <p>Por segurança, ninguém — nem o administrador — vê ou define a sua senha. Você mesmo a cria pelo link enviado ao seu e-mail.</p>
-      </div>
-      <a class="login__totem" href="/">← Voltar para o login</a>
+      </article>
+      <footer>
+        <a class="login__totem" href="/">← Voltar para o login</a>
+      </footer>
     </section>
 
-    <section class="login__area">
+    <section class="login__area" aria-label="Formulário de acesso">
       <div class="login__form">
         {% block conteudo %}{% endblock %}
       </div>

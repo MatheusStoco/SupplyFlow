@@ -15,7 +15,7 @@
 
     <!-- Painel escuro da esquerda: marca e apresentação do backoffice -->
     <section class="login__marca" aria-label="Sobre o sistema">
-      <div class="marca">
+      <header class="marca">
         <span class="marca__icone" aria-hidden="true">
           <!-- Símbolo SupplyFlow: o S é o caminho do material (ponto = estoque, seta = entrega) -->
           <svg viewBox="6.5 7 51 51" fill="none"><path d="M43 13H27a9 9 0 0 0 0 18h10a9 9 0 0 1 0 18H25" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 41.5L15.5 49 26 56.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="43" cy="13" r="5.5" fill="currentColor"/></svg>
@@ -24,42 +24,49 @@
           <span class="marca__nome">Supply<span class="marca__destaque">Flow</span></span>
           <span class="marca__sub">Gestão de EPIs e consumíveis</span>
         </span>
-      </div>
+      </header>
 
-      <div class="login__apresentacao">
+      <article class="login__apresentacao">
         <h1>Backoffice administrativo</h1>
         <p>Gestão organizacional, produtos, estoque, políticas de fornecimento, solicitações, entregas, devoluções e auditoria.</p>
         <ul class="login__recursos">
           <li><i class="bi bi-shield-check" aria-hidden="true"></i> Menu e acesso validados por perfil</li>
           <li><i class="bi bi-pc-display" aria-hidden="true"></i> Trilha de auditoria das ações</li>
         </ul>
-      </div>
+      </article>
 
-      <a class="login__totem" href="/totem/">Ir para o autoatendimento (totem) →</a>
+      <footer>
+        <a class="login__totem" href="/totem/">Ir para o autoatendimento (totem) →</a>
+      </footer>
     </section>
 
     <!-- Formulário de login: e-mail + senha, conferidos no servidor -->
-    <section class="login__area">
+    <section class="login__area" aria-label="Autenticação">
       <form class="login__form" id="form-login" novalidate>
-        <h2>Entrar no backoffice</h2>
-        <p class="login__instrucao">Use o e-mail cadastrado e a sua senha.</p>
+        <header>
+          <h2>Entrar no backoffice</h2>
+          <p class="login__instrucao">Use o e-mail cadastrado e a sua senha.</p>
+        </header>
 
         <div class="alert alert-danger d-none" role="alert" id="login-erro"></div>
 
-        <label for="email" class="form-label">E-mail</label>
-        <input type="email" id="email" name="email" class="form-control" autocomplete="username" required autofocus>
+        <fieldset>
+          <legend class="visually-hidden">Credenciais de acesso</legend>
+          <label for="email" class="form-label">E-mail</label>
+          <input type="email" id="email" name="email" class="form-control" autocomplete="username" required autofocus>
 
-        <label for="senha" class="form-label mt-3">Senha</label>
-        <input type="password" id="senha" name="senha" class="form-control" autocomplete="current-password" required>
+          <label for="senha" class="form-label mt-3">Senha</label>
+          <input type="password" id="senha" name="senha" class="form-control" autocomplete="current-password" required>
+        </fieldset>
 
         <button type="submit" class="btn btn-primary w-100 login__entrar" id="btn-entrar">
           <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Entrar
         </button>
 
-        <p class="login__nota d-flex justify-content-between flex-wrap gap-2">
+        <footer class="login__nota d-flex justify-content-between flex-wrap gap-2">
           <a href="/senha/esqueci/">Esqueci minha senha</a>
           <span>Primeiro acesso? Use o link enviado ao seu e-mail.</span>
-        </p>
+        </footer>
       </form>
     </section>
 
