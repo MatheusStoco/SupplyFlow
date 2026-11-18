@@ -18,7 +18,7 @@ from ..auditoria import registrar
 from ..ia import CATEGORIAS
 from ..models import (DecisaoSolicitacao, Devolucao, Entrega, MovimentacaoEstoque, Produto, Setor, Solicitacao,
                       Usuario)
-from ..permissoes import api_backoffice
+from ..permissoes import api_backoffice, pode
 from ..servicos import estados, rh
 from ..servicos.empresa import obter_dados_empresa
 from .cadastros import _catalogo_cargos
