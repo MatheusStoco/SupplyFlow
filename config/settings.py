@@ -113,6 +113,7 @@ if DATABASE_URL:
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
+            conn_health_checks=True,
             # O banco do Render exige SSL; um PostgreSQL local normalmente não tem.
             ssl_require=_bool("DATABASE_SSL", True),
         )
