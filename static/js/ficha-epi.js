@@ -17,6 +17,11 @@
   var btnNadaConsta = document.getElementById("btn-nada-consta");
   var secaoNadaConsta = document.getElementById("secao-nada-consta");
   var corpoNadaConsta = document.getElementById("corpo-nada-consta");
+  var btnConfigEmpresa = document.getElementById("btn-config-empresa");
+  var modalEmpresaEl = document.getElementById("modal-empresa");
+  var bsModalEmpresa = modalEmpresaEl ? new bootstrap.Modal(modalEmpresaEl) : null;
+  var formEmpresa = document.getElementById("form-empresa");
+  var dadosCarregados = null;
 
   function formatarSetorFuncionario(funcionario) {
     if (!funcionario.setor) {
@@ -227,6 +232,52 @@
     corpoNadaConsta.innerHTML = bannerStatusHtml + listaPendentesHtml + assinaturasHtml;
   }
 
+  function renderizarCabecalhoNR6(dados) {
+    var el = document.getElementById("ficha-nr6-cabecalho");
+    if (!el) { return; }
+    var emp = (dados && dados.empresa) || {};
+    var razao = emp.razao_social || "Empresa não configurada";
+    var cnpj = emp.cnpj || "CNPJ não configurado (configure em Dados da Empresa)";
+    var estab = emp.estabelecimento || "—";
+    var end = [emp.endereco, emp.cidade].filter(Boolean).join(" — ") || "—";
+    el.innerHTML =
+      '<div class="ficha-nr6-cabecalho__topo">' +
+        '<div>' +
+          '<div class="ficha-nr6-cabecalho__titulo">FICHA DE CONTROLE E FORNECIMENTO DE EPI — NR-6</div>' +
+          '<div class="ficha-nr6-cabecalho__sub">Portaria MTP nº 672/2021 · Registro Individual de Entrega e Devolução</div>' +
+        '</div>' +
+        '<div class="ficha-nr6-cabecalho__emissao">Emissão: ' + escapar((dados && dados.emitida_em) || "") + '</div>' +
+      '</div>' +
+      '<div class="ficha-nr6-cabecalho__grid">' +
+        '<div><strong>Empregador:</strong> ' + escapar(razao) + '</div>' +
+        '<div><strong>CNPJ:</strong> ' + escapar(cnpj) + '</div>' +
+        '<div><strong>Estabelecimento:</strong> ' + escapar(estab) + '</div>' +
+        '<div><strong>Endereço:</strong> ' + escapar(end) + '</div>' +
+      '</div>';
+  }
+
+  function renderizarRodapeNR6(dados) {
+    var el = document.getElementById("ficha-nr6-rodape");
+    if (!el) { return; }
+    var emp = (dados && dados.empresa) || {};
+    var func = (dados && dados.funcionario) || {};
+    var localData = (emp.cidade ? emp.cidade + ", " : "") + "emitida em " + ((dados && dados.emitida_em) || "");
+    el.innerHTML =
+      '<div class="ficha-nr6-rodape__local">' + escapar(localData) + '</div>' +
+      '<div class="ficha-nr6-rodape__assinaturas">' +
+        '<div class="ficha-nr6-rodape__bloco">' +
+          '<div class="ficha-nr6-rodape__linha"></div>' +
+          '<strong>' + escapar(func.nome || "Colaborador") + '</strong>' +
+          '<span>Matrícula: ' + escapar(func.matricula || "—") + ' · Assinatura do Colaborador</span>' +
+        '</div>' +
+        '<div class="ficha-nr6-rodape__bloco">' +
+          '<div class="ficha-nr6-rodape__linha"></div>' +
+          '<strong>Responsável pelo Almoxarifado / SESMT</strong>' +
+          '<span>Assinatura e Carimbo</span>' +
+        '</div>' +
+      '</div>';
+  }
+
   function criarLinhaEntregaFichaHtml(entrega) {
     var htmlDevolucao = "—";
     if (entrega.devolvido_em) {
@@ -237,7 +288,7 @@
 
     return (
       "<tr>" +
-        '<td class="text-nowrap">' + escapar(entrega.data) + "</td>" +
+        '<td class="text-nowrap">' + escapar(entrega.data_hora || entrega.data) + "</td>" +
         "<td>" +
           escapar(entrega.produto) +
           '<span class="small text-muted d-block">' + escapar(entrega.solicitacao) + "</span>" +
@@ -248,6 +299,10 @@
         "<td>" + escapar(entrega.motivo) + "</td>" +
         "<td>" + escapar(entrega.almoxarife || "—") + "</td>" +
         "<td>" + htmlDevolucao + "</td>" +
+        '<td class="solo-impressao-celula ficha-nr6-comprovacao">' +
+          (entrega.autenticacao_pin ? '<span class="d-block">PIN Totem</span>' : "") +
+          '<span class="ficha-nr6-rubrica">Rubrica: ____________</span>' +
+        "</td>" +
       "</tr>"
     );
   }
@@ -271,6 +326,7 @@
         var paresDadosFuncionario = [
           ["Nome", escapar(funcionario.nome)],
           ["Matrícula", escapar(funcionario.matricula)],
+          ["Admissão", escapar(funcionario.data_admissao || "—")],
           ["Cargo (RH)", escapar(funcionario.cargo || "—")],
           ["Função (SST)", escapar(funcionario.funcao || "—")],
           ["Habilitações / NRs", formatarHabilitacoesFichaHtml(funcionario)],
@@ -285,6 +341,12 @@
           return "<div><dt>" + escapar(par[0]) + "</dt><dd>" + par[1] + "</dd></div>";
         }).join("");
 
+        dadosCarregados = dados;
+        if (btnConfigEmpresa) {
+          btnConfigEmpresa.classList.toggle("d-none", !dados.pode_editar_empresa);
+        }
+        renderizarCabecalhoNR6(dados);
+        renderizarRodapeNR6(dados);
         renderizarHistoricoFuncional(dados);
         renderizarTermoNadaConsta(dados);
 
@@ -320,6 +382,53 @@
     btnNadaConsta.addEventListener("click", function () {
       secaoNadaConsta.classList.remove("d-none");
       secaoNadaConsta.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  if (btnConfigEmpresa && bsModalEmpresa) {
+    btnConfigEmpresa.addEventListener("click", function () {
+      var emp = (dadosCarregados && dadosCarregados.empresa) || {};
+      var erroEl = document.getElementById("erro-empresa");
+      if (erroEl) { erroEl.classList.add("d-none"); }
+      document.getElementById("empresa-razao").value = emp.razao_social || "";
+      document.getElementById("empresa-cnpj").value = emp.cnpj || "";
+      document.getElementById("empresa-fantasia").value = emp.nome_fantasia || "";
+      document.getElementById("empresa-estabelecimento").value = emp.estabelecimento || "";
+      document.getElementById("empresa-endereco").value = emp.endereco || "";
+      document.getElementById("empresa-cidade").value = emp.cidade || "";
+      bsModalEmpresa.show();
+    });
+  }
+
+  if (formEmpresa) {
+    formEmpresa.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      var erroEl = document.getElementById("erro-empresa");
+      var btnSalvar = document.getElementById("btn-salvar-empresa");
+      if (erroEl) { erroEl.classList.add("d-none"); }
+      if (btnSalvar) { btnSalvar.disabled = true; }
+      SF.api.post("/api/empresa/salvar/", {
+        razao_social: document.getElementById("empresa-razao").value.trim(),
+        cnpj: document.getElementById("empresa-cnpj").value.trim(),
+        nome_fantasia: document.getElementById("empresa-fantasia").value.trim(),
+        estabelecimento: document.getElementById("empresa-estabelecimento").value.trim(),
+        endereco: document.getElementById("empresa-endereco").value.trim(),
+        cidade: document.getElementById("empresa-cidade").value.trim()
+      }).then(function (resp) {
+        if (dadosCarregados) {
+          dadosCarregados.empresa = resp.empresa;
+          renderizarCabecalhoNR6(dadosCarregados);
+          renderizarRodapeNR6(dadosCarregados);
+        }
+        if (bsModalEmpresa) { bsModalEmpresa.hide(); }
+      }).catch(function (erro) {
+        if (erroEl) {
+          erroEl.textContent = (erro && erro.message) || "Erro ao salvar dados da empresa.";
+          erroEl.classList.remove("d-none");
+        }
+      }).finally(function () {
+        if (btnSalvar) { btnSalvar.disabled = false; }
+      });
     });
   }
 
