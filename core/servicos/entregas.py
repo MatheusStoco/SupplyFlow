@@ -18,8 +18,8 @@ def devolucao_pendente(solicitacao):
 def confirmar_entrega(solicitacao, almoxarife):
     """Baixa definitiva do estoque e registro da entrega com os dados do momento."""
     with transaction.atomic():
-        solicitacao = Solicitacao.objects.select_for_update().select_related(
-            "solicitante__setor", "totem").get(pk=solicitacao.pk)
+        solicitacao = Solicitacao.objects.select_for_update().get(pk=solicitacao.pk)
+
         if estados.normalizar(solicitacao.status) not in estados.ESTADOS_APROVADOS:
             raise RegraViolada(
                 f"Só é possível entregar solicitações aprovadas. Esta está “{estados.rotulo(solicitacao.status)}”."
