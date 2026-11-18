@@ -20,8 +20,10 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <h1 class="pagina-titulo">Histórico</h1>
-        <p class="pagina-descricao">Entregas, devoluções, entradas de estoque e solicitações, com filtros e exportação (RF-44, RF-45, RF-47, RF-49).</p>
+        <header>
+          <h1 class="pagina-titulo">Histórico</h1>
+          <p class="pagina-descricao">Entregas, devoluções, entradas de estoque e solicitações, com filtros e exportação (RF-44, RF-45, RF-47, RF-49).</p>
+        </header>
 
         <form class="cartao filtros" id="form-filtros" aria-label="Filtros do histórico">
           <div>
@@ -67,10 +69,10 @@
         </form>
 
         <section class="cartao mt-3" aria-labelledby="t-historico">
-          <div class="cartao__cabecalho">
+          <header class="cartao__cabecalho">
             <h2 class="cartao__titulo" id="t-historico">Registros</h2>
             <span class="cartao__meta" id="meta-historico" aria-live="polite"></span>
-          </div>
+          </header>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-historico">
             <table class="tabela-solicitacoes">
               <thead>

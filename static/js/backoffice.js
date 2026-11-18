@@ -169,18 +169,18 @@
     }
 
     document.getElementById("sidebar").innerHTML =
-      '<div class="sidebar__cabecalho">' +
+      '<header class="sidebar__cabecalho">' +
         '<a class="marca" href="visao-geral.html">' +
           '<span class="marca__icone" aria-hidden="true">' + ICONE_MARCA + "</span>" +
           '<span><span class="marca__nome">Supply<span class="marca__destaque">Flow</span></span><span class="marca__sub">Gestão de EPIs</span></span>' +
         "</a>" +
         '<button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas"' +
                 ' data-bs-target="#sidebar" aria-label="Fechar menu"></button>' +
-      "</div>" +
+      "</header>" +
       '<nav class="sidebar__nav" aria-label="Menu principal">' +
         '<ul class="menu">' + itensMenuHtml + "</ul>" +
       "</nav>" +
-      '<div class="sidebar__rodape">' + escapar(textoAcessoRodape) + "</div>";
+      '<footer class="sidebar__rodape">' + escapar(textoAcessoRodape) + "</footer>";
 
     /* Garante que o item ativo fique visível na rolagem da barra lateral */
     var navLateral = document.querySelector(".sidebar__nav");

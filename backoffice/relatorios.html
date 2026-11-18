@@ -20,8 +20,10 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <h1 class="pagina-titulo">Relatórios de gestão</h1>
-        <p class="pagina-descricao" id="descricao-periodo">Consumo, exceções e justificativas do período, calculados a partir das entregas e decisões registradas.</p>
+        <header>
+          <h1 class="pagina-titulo">Relatórios de gestão</h1>
+          <p class="pagina-descricao" id="descricao-periodo">Consumo, exceções e justificativas do período, calculados a partir das entregas e decisões registradas.</p>
+        </header>
 
         <form class="cartao filtros filtros--compacto" id="form-periodo" aria-label="Período do relatório">
           <div>
@@ -44,10 +46,10 @@
 
         <div class="avaliacao">
           <section class="cartao" aria-labelledby="t-centros">
-            <div class="cartao__cabecalho">
+            <header class="cartao__cabecalho">
               <h2 class="cartao__titulo" id="t-centros">Consumo por centro de custo</h2>
               <a class="link-ver-todas" data-secao="centros" href="#"><i class="bi bi-download" aria-hidden="true"></i> CSV</a>
-            </div>
+            </header>
             <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-centros">
               <table class="tabela-solicitacoes">
                 <thead><tr><th scope="col">Centro de custo</th><th scope="col" class="text-end">Itens</th><th scope="col" class="text-end">Valor (R$)</th></tr></thead>
@@ -57,17 +59,17 @@
           </section>
 
           <section class="cartao" aria-labelledby="t-status">
-            <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-status">Solicitações por situação</h2></div>
+            <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-status">Solicitações por situação</h2></header>
             <div class="cartao__corpo"><ul class="lista-solicitacoes" id="lista-status"></ul></div>
           </section>
         </div>
 
         <div class="avaliacao mt-4">
           <section class="cartao" aria-labelledby="t-produtos">
-            <div class="cartao__cabecalho">
+            <header class="cartao__cabecalho">
               <h2 class="cartao__titulo" id="t-produtos">Consumo por produto</h2>
               <a class="link-ver-todas" data-secao="produtos" href="#"><i class="bi bi-download" aria-hidden="true"></i> CSV</a>
-            </div>
+            </header>
             <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-produtos">
               <table class="tabela-solicitacoes">
                 <thead><tr><th scope="col">Produto</th><th scope="col">Tipo</th><th scope="col" class="text-end">Itens</th><th scope="col" class="text-end">Valor (R$)</th></tr></thead>
@@ -77,16 +79,16 @@
           </section>
 
           <section class="cartao" aria-labelledby="t-excecoes">
-            <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-excecoes">Exceções por motivo</h2></div>
+            <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-excecoes">Exceções por motivo</h2></header>
             <div class="cartao__corpo"><ul class="lista-solicitacoes" id="lista-excecoes"></ul></div>
           </section>
         </div>
 
         <section class="cartao mt-4" aria-labelledby="t-justificativas">
-          <div class="cartao__cabecalho">
+          <header class="cartao__cabecalho">
             <h2 class="cartao__titulo" id="t-justificativas">Justificativas por categoria</h2>
             <a class="link-ver-todas" data-secao="justificativas" href="#"><i class="bi bi-download" aria-hidden="true"></i> CSV</a>
-          </div>
+          </header>
           <p class="cartao__subtitulo">Comparação entre a categoria sugerida pela IA e a confirmada pelo responsável nas decisões do período.</p>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-justificativas">
             <table class="tabela-solicitacoes">

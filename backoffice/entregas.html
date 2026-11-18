@@ -20,16 +20,18 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <h1 class="pagina-titulo">Entregas</h1>
-        <p class="pagina-descricao">Solicitações aprovadas aguardando a retirada física e o registro das entregas confirmadas pelo almoxarifado.</p>
+        <header>
+          <h1 class="pagina-titulo">Entregas</h1>
+          <p class="pagina-descricao">Solicitações aprovadas aguardando a retirada física e o registro das entregas confirmadas pelo almoxarifado.</p>
+        </header>
 
         <div class="alert d-none" role="status" id="aviso-entregas"></div>
 
         <section class="cartao mb-4" aria-labelledby="t-pendentes">
-          <div class="cartao__cabecalho">
+          <header class="cartao__cabecalho">
             <h2 class="cartao__titulo" id="t-pendentes">Aguardando retirada</h2>
             <span class="cartao__meta" id="meta-pendentes"></span>
-          </div>
+          </header>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-pendentes">
             <table class="tabela-solicitacoes">
               <thead>
@@ -49,10 +51,10 @@
         </section>
 
         <section class="cartao" aria-labelledby="t-confirmadas">
-          <div class="cartao__cabecalho">
+          <header class="cartao__cabecalho">
             <h2 class="cartao__titulo" id="t-confirmadas">Entregas confirmadas</h2>
             <span class="cartao__meta">Dados gravados no momento da entrega</span>
-          </div>
+          </header>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-confirmadas">
             <table class="tabela-solicitacoes">
               <thead>

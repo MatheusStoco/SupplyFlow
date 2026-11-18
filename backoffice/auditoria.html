@@ -22,8 +22,10 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <h1 class="pagina-titulo">Auditoria</h1>
-        <p class="pagina-descricao">Registro das operações críticas: quem fez, o quê, quando e de onde. Os registros não podem ser editados nem apagados pelo sistema.</p>
+        <header>
+          <h1 class="pagina-titulo">Auditoria</h1>
+          <p class="pagina-descricao">Registro das operações críticas: quem fez, o quê, quando e de onde. Os registros não podem ser editados nem apagados pelo sistema.</p>
+        </header>
 
         <form class="cartao filtros mb-3" id="form-filtro" aria-label="Filtrar auditoria">
           <div>
@@ -48,10 +50,10 @@
         </form>
 
         <section class="cartao" aria-labelledby="titulo-eventos">
-          <div class="cartao__cabecalho">
+          <header class="cartao__cabecalho">
             <h2 class="cartao__titulo" id="titulo-eventos">Eventos</h2>
             <span class="cartao__meta" id="meta-eventos" aria-live="polite"></span>
-          </div>
+          </header>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="titulo-eventos">
             <table class="tabela-solicitacoes">
               <thead>

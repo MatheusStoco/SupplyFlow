@@ -20,8 +20,10 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <h1 class="pagina-titulo">Avaliação do modelo (IA)</h1>
-        <p class="pagina-descricao" id="descricao-modelo">Métricas do classificador de justificativas medidas em um conjunto de teste separado do treino.</p>
+        <header>
+          <h1 class="pagina-titulo">Avaliação do modelo (IA)</h1>
+          <p class="pagina-descricao" id="descricao-modelo">Métricas do classificador de justificativas medidas em um conjunto de teste separado do treino.</p>
+        </header>
 
         <div class="alert alert-warning d-none" role="alert" id="aviso-sintetico">
           <strong>Conjunto de dados sintético.</strong> As justificativas usadas no treino e no teste foram escritas para o
@@ -37,9 +39,9 @@
 
         <div class="avaliacao">
           <section class="cartao" aria-labelledby="t-categorias">
-            <div class="cartao__cabecalho">
+            <header class="cartao__cabecalho">
               <h2 class="cartao__titulo" id="t-categorias">Desempenho por categoria</h2>
-            </div>
+            </header>
             <p class="cartao__subtitulo" id="sub-categorias"></p>
             <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-categorias">
               <table class="tabela-solicitacoes">
@@ -60,7 +62,7 @@
           </section>
 
           <section class="cartao" aria-labelledby="t-sobre">
-            <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-sobre">Sobre o classificador</h2></div>
+            <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-sobre">Sobre o classificador</h2></header>
             <div class="cartao__corpo">
               <ul class="lista-sobre">
                 <li>Recebe <strong>apenas o texto da justificativa</strong> — sem nome, CPF ou matrícula (minimização de dados, RNF-06).</li>
@@ -74,7 +76,7 @@
         </div>
 
         <section class="cartao mt-4" aria-labelledby="t-matriz">
-          <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-matriz">Matriz de confusão</h2></div>
+          <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-matriz">Matriz de confusão</h2></header>
           <p class="cartao__subtitulo">Linhas: categoria correta. Colunas: categoria sugerida pelo modelo. A diagonal são os acertos.</p>
           <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-matriz">
             <table class="matriz" id="matriz"></table>
@@ -83,7 +85,7 @@
 
         <div class="avaliacao mt-4">
           <section class="cartao" aria-labelledby="t-comparacao">
-            <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-comparacao">Comparações</h2></div>
+            <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-comparacao">Comparações</h2></header>
             <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-comparacao">
               <table class="tabela-solicitacoes">
                 <thead><tr><th scope="col">Abordagem</th><th scope="col" class="text-end">Acurácia</th><th scope="col" class="text-end">F1 macro</th></tr></thead>
@@ -94,7 +96,7 @@
           </section>
 
           <section class="cartao" aria-labelledby="t-uso">
-            <div class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-uso">Supervisão humana em uso</h2></div>
+            <header class="cartao__cabecalho"><h2 class="cartao__titulo" id="t-uso">Supervisão humana em uso</h2></header>
             <div class="cartao__corpo">
               <p id="resumo-uso" class="mb-3"></p>
               <ul class="lista-solicitacoes" id="lista-reclassificacoes"></ul>
