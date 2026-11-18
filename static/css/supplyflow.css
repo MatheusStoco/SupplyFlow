@@ -42,6 +42,7 @@
 
 /* ---------- Design Tokens (Industrial Moderno / Dark Mode & Safety Orange) ---------- */
 :root {
+  color-scheme: dark;
   /* Cores principais de superfície e marca industrial */
   --sf-navy: #070b12;
   --sf-navy-elevado: #0d131f;
@@ -253,6 +254,44 @@ body {
   color: var(--sf-texto);
   font-size: 0.9375rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-select {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.form-control-sm,
+.form-select-sm,
+.btn-sm {
+  min-height: 2.125rem;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: #0b101b;
+  border-color: #1c2638;
+  color: var(--sf-texto-desativado);
+  opacity: 0.75;
+}
+
+.form-text {
+  color: var(--sf-texto-suave);
+  font-size: 0.8rem;
+}
+
+.form-check-input {
+  background-color: #0e1522;
+  border-color: var(--sf-borda-forte);
+}
+
+.form-check-input:checked {
+  background-color: var(--sf-laranja);
+  border-color: var(--sf-laranja);
+}
+
+.form-check-input:focus {
+  border-color: var(--sf-laranja);
+  box-shadow: var(--sf-anel-foco);
 }
 
 .form-control:focus,
@@ -1773,10 +1812,22 @@ body {
 /* =====================================================================
    SOBREPOSIÇÕES BOOTSTRAP PARA DARK MODE INDUSTRIAL
    ===================================================================== */
+.btn-light {
+  --bs-btn-color: var(--sf-texto-secundario);
+  --bs-btn-bg: var(--sf-superficie-sutil);
+  --bs-btn-border-color: var(--sf-borda-forte);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: var(--sf-superficie-hover);
+  --bs-btn-hover-border-color: var(--sf-texto-suave);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: var(--sf-superficie-hover);
+  border-radius: var(--sf-raio-sm);
+}
+
 .modal-content {
   background-color: var(--sf-superficie);
   border: 1px solid var(--sf-borda-forte);
-  border-radius: var(--sf-raio);
+  border-radius: var(--sf-raio) !important;
   color: var(--sf-texto);
   box-shadow: var(--sf-sombra-md);
   border-top: 2px solid var(--sf-laranja);

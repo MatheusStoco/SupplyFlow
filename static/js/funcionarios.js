@@ -178,11 +178,39 @@
       return;
     }
     var ehOperacional = selectPerfil.value === "COLABORADOR";
+    var blocoEmail = document.getElementById("bloco-email-backoffice");
     campoEmail.required = !ehOperacional;
+    campoEmail.disabled = ehOperacional;
+    if (blocoEmail) {
+      blocoEmail.classList.toggle("opacity-50", ehOperacional);
+    }
     if (ehOperacional) {
+      campoEmail.value = "";
       campoEmail.placeholder = "Dispensado para chão de fábrica";
     } else {
       campoEmail.placeholder = "usuario@empresa.com.br (obrigatório)";
+    }
+  }
+
+  function limparErroModalFuncionario() {
+    var erroEl = document.getElementById("erro-modal-funcionario");
+    if (erroEl) {
+      erroEl.textContent = "";
+      erroEl.classList.add("d-none");
+    }
+  }
+
+  function mostrarErroModalFuncionario(mensagem) {
+    var erroEl = document.getElementById("erro-modal-funcionario");
+    if (!erroEl) {
+      alert(mensagem);
+      return;
+    }
+    erroEl.textContent = mensagem;
+    erroEl.classList.remove("d-none");
+    var corpoModal = modalEl ? modalEl.querySelector(".modal-body") : null;
+    if (corpoModal) {
+      corpoModal.scrollTop = 0;
     }
   }
 
@@ -460,6 +488,7 @@
   }
 
   function preencherModalParaEdicao(funcionario) {
+    limparErroModalFuncionario();
     var tamanhos = obterTamanhosFuncionario(funcionario);
     document.getElementById("modalFuncTitulo").textContent = "Editar Funcionário";
     document.getElementById("func-id").value = funcionario.id;
@@ -731,6 +760,7 @@
   /* ---------- Fluxos de Cadastro, Mudança Funcional e Importação CSV ---------- */
 
   function abrirModalNovoFuncionario() {
+    limparErroModalFuncionario();
     formFunc.reset();
     document.getElementById("modalFuncTitulo").textContent = "Novo Funcionário Operacional";
     document.getElementById("func-id").value = "";
@@ -788,6 +818,7 @@
 
   function submeterFormularioFuncionario(evento) {
     evento.preventDefault();
+    limparErroModalFuncionario();
 
     /* Se o usuário selecionou uma habilitação no dropdown e esqueceu de clicar em Adicionar, incorpora */
     if (inputHabNome && inputHabNome.value.trim()) {
@@ -813,7 +844,7 @@
         );
       })
       .catch(function (erro) {
-        alert(erro.message);
+        mostrarErroModalFuncionario(erro.message);
       });
   }
 

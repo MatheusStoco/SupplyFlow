@@ -101,14 +101,15 @@
 
   <!-- Modal de Cadastro / Edição de Funcionário -->
   <div class="modal fade" id="modal-funcionario" tabindex="-1" aria-labelledby="modalFuncTitulo" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content rounded-4 border-0 shadow">
-        <form id="form-funcionario">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content shadow">
+        <form id="form-funcionario" class="d-flex flex-column overflow-hidden">
           <div class="modal-header border-bottom">
             <h2 class="modal-title h5 fw-bold" id="modalFuncTitulo">Novo Funcionário Operacional</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body p-4">
+            <div class="alert alert-danger d-none mb-3" role="alert" id="erro-modal-funcionario"></div>
             <input type="hidden" id="func-id">
 
             <fieldset class="mb-3">
@@ -131,31 +132,36 @@
                 </div>
               </div>
 
-              <div class="row g-2 mb-3">
-                <div class="col-12 col-sm-4">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="row g-2 align-items-end mb-3">
+                <div class="col-12 col-md-4">
+                  <div class="d-flex justify-content-between align-items-center gap-1 mb-1">
                     <label for="func-cargo" class="form-label small fw-semibold mb-0">Cargo (RH) *</label>
-                    <a href="cargos.html" target="_blank" class="small text-decoration-none" title="Abrir catálogo para gerenciar ou cadastrar novos cargos">
-                      <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar cargos
+                    <a href="cargos.html" target="_blank" class="small text-decoration-none text-nowrap" title="Abrir catálogo para gerenciar ou cadastrar novos cargos">
+                      <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar
                     </a>
                   </div>
                   <select id="func-cargo" class="form-select" required>
                     <option value="">Selecione o cargo...</option>
                   </select>
                 </div>
-                <div class="col-12 col-sm-4">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
-                    <label for="func-funcao" class="form-label small fw-semibold mb-0">Função / Atividade (SST)</label>
-                    <a href="cargos.html" target="_blank" class="small text-decoration-none" title="Abrir catálogo para gerenciar ou cadastrar novas funções">
-                      <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar funções
+                <div class="col-12 col-md-4">
+                  <div class="d-flex justify-content-between align-items-center gap-1 mb-1">
+                    <label for="func-funcao" class="form-label small fw-semibold mb-0">Função (SST)</label>
+                    <a href="cargos.html#funcoes" target="_blank" class="small text-decoration-none text-nowrap" title="Abrir catálogo para gerenciar ou cadastrar novas funções">
+                      <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar
                     </a>
                   </div>
                   <select id="func-funcao" class="form-select">
                     <option value="">Selecione a função...</option>
                   </select>
                 </div>
-                <div class="col-12 col-sm-4">
-                  <label for="func-setor" class="form-label small fw-semibold">Setor / Centro Custo</label>
+                <div class="col-12 col-md-4">
+                  <div class="d-flex justify-content-between align-items-center gap-1 mb-1">
+                    <label for="func-setor" class="form-label small fw-semibold mb-0">Setor / Centro Custo</label>
+                    <a href="centros-de-custo.html" target="_blank" class="small text-decoration-none text-nowrap" title="Abrir cadastro de setores e centros de custo">
+                      <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar
+                    </a>
+                  </div>
                   <select id="func-setor" class="form-select">
                     <option value="">Selecione...</option>
                   </select>
@@ -169,9 +175,9 @@
                 </div>
                 <div class="row g-2 align-items-end">
                   <div class="col-12 col-sm-6">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="d-flex justify-content-between align-items-center gap-1 mb-1">
                       <label for="hab-nome-input" class="form-label small fw-semibold mb-0">Habilitação / NR</label>
-                      <a href="cargos.html" target="_blank" class="small text-decoration-none" title="Abrir catálogo para gerenciar ou cadastrar novas habilitações/NRs">
+                      <a href="cargos.html#habilitacoes" target="_blank" class="small text-decoration-none text-nowrap" title="Abrir catálogo para gerenciar ou cadastrar novas habilitações/NRs">
                         <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Gerenciar NRs
                       </a>
                     </div>
@@ -262,7 +268,7 @@
             </fieldset>
           </div>
           <div class="modal-footer border-top">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary px-4 fw-bold">Salvar Funcionário</button>
           </div>
         </form>

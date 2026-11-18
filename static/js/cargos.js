@@ -315,5 +315,18 @@
     });
   }
 
+  var mapaAbasHash = {
+    "#funcoes": "tab-btn-funcoes",
+    "#habilitacoes": "tab-btn-habilitacoes",
+    "#cargos": "tab-btn-cargos"
+  };
+  var idAbaInicial = mapaAbasHash[window.location.hash];
+  if (idAbaInicial) {
+    var btnAbaInicial = document.getElementById(idAbaInicial);
+    if (btnAbaInicial) {
+      bootstrap.Tab.getOrCreateInstance(btnAbaInicial).show();
+    }
+  }
+
   carregarCargos();
 })();
