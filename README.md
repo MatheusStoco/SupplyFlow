@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="static/img/logo-horizontal-escuro.svg">
+  <img src="static/img/logo-horizontal.svg" alt="SupplyFlow" width="320">
+</picture>
+
 # SupplyFlow
 
 Sistema web para gestão e rastreabilidade da distribuição de EPIs e materiais consumíveis, com autoatendimento (totem) e classificação, por IA, das justificativas de substituição antecipada.
