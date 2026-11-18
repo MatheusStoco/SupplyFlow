@@ -37,6 +37,74 @@
   }
   SF.escapar = escapar;
 
+  /* ---------- Helpers Compartilhados de UI (SF.ui) ---------- */
+  SF.ui = {
+    /* Exibe um alerta Bootstrap padrão e move o foco quando o container é focável */
+    mostrarAviso: function (elementoOuId, texto, tipo) {
+      var el = typeof elementoOuId === "string"
+        ? document.getElementById(elementoOuId)
+        : elementoOuId;
+      if (!el) return;
+      el.className = "alert alert-" + (tipo || "info");
+      el.textContent = texto;
+      if (el.hasAttribute("tabindex")) {
+        el.focus();
+      }
+    },
+
+    /* Preenche um <select> com strings ou objetos de catálogo (Cargo, Função, NR),
+       preservando um valor pré-existente fora do catálogo em edições legadas */
+    preencherSelectCatalogo: function (selectEl, listaItens, placeholder, valorSelecionado, chaveProp) {
+      if (!selectEl) return;
+      var chave = chaveProp || "nome";
+      var opcoes = ['<option value="">' + escapar(placeholder || "Selecione...") + "</option>"];
+      var valorEncontrado = false;
+
+      (listaItens || []).forEach(function (item) {
+        var nome = typeof item === "string" ? item : (item[chave] || item.nome || "");
+        if (!nome) return;
+        var selecionado = Boolean(
+          valorSelecionado && nome.toLowerCase() === String(valorSelecionado).toLowerCase()
+        );
+        if (selecionado) {
+          valorEncontrado = true;
+        }
+        opcoes.push(
+          '<option value="' + escapar(nome) + '"' + (selecionado ? " selected" : "") + ">" +
+            escapar(nome) +
+          "</option>"
+        );
+      });
+
+      if (valorSelecionado && !valorEncontrado) {
+        opcoes.push(
+          '<option value="' + escapar(valorSelecionado) + '" selected>' +
+            escapar(valorSelecionado) +
+          "</option>"
+        );
+      }
+      selectEl.innerHTML = opcoes.join("");
+      if (valorSelecionado) {
+        selectEl.value = valorSelecionado;
+      }
+    },
+
+    /* Seleciona um valor em um <select>, inserindo a opção caso seja um valor legado */
+    selecionarOuAdicionar: function (selectEl, valor) {
+      if (!selectEl) return;
+      if (valor) {
+        var existe = Array.from(selectEl.options).some(function (opt) { return opt.value === valor; });
+        if (!existe) {
+          var opt = document.createElement("option");
+          opt.value = valor;
+          opt.textContent = valor;
+          selectEl.appendChild(opt);
+        }
+      }
+      selectEl.value = valor || "";
+    }
+  };
+
   /* Transforma um título como "Centros de custo" em um ID válido "centros-de-custo" */
   function converterParaIdHtml(texto) {
     return texto

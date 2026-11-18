@@ -15,9 +15,7 @@
   var podeEditar = SF.sessao.pode("produtos");
 
   function mostrarAviso(texto, tipo) {
-    aviso.className = "alert alert-" + tipo;
-    aviso.textContent = texto;
-    aviso.focus();
+    SF.ui.mostrarAviso(aviso, texto, tipo);
   }
 
   function montarOpcoesSelect(lista, rotuloVazio) {
@@ -102,49 +100,9 @@
         if (selectFunc) {
           selectFunc.innerHTML = montarOpcoesSelect(dados.funcionarios || [], "Qualquer funcionário do escopo");
         }
-        var selectCargo = document.getElementById("regra-cargo");
-        if (selectCargo) {
-          var cargosHtml = ['<option value="">Todos os cargos</option>'];
-          (dados.cargos || []).forEach(function (item) {
-            var valor = typeof item === "string" ? item : (item.cargo || item.nome || "");
-            if (valor) {
-              cargosHtml.push('<option value="' + escapar(valor) + '">' + escapar(valor) + '</option>');
-            }
-          });
-          selectCargo.innerHTML = cargosHtml.join("");
-        }
-
-        var datalistCargos = document.getElementById("lista-cargos");
-        if (datalistCargos) {
-          datalistCargos.innerHTML = (dados.cargos || []).map(function (item) {
-            var valor = typeof item === "string" ? item : (item.cargo || item.nome || "");
-            return '<option value="' + escapar(valor) + '">';
-          }).join("");
-        }
-
-        var selectFuncao = document.getElementById("regra-funcao");
-        if (selectFuncao) {
-          var funcoesHtml = ['<option value="">Todas as funções</option>'];
-          (dados.funcoes || []).forEach(function (item) {
-            var valor = typeof item === "string" ? item : (item.funcao || item.nome || "");
-            if (valor) {
-              funcoesHtml.push('<option value="' + escapar(valor) + '">' + escapar(valor) + '</option>');
-            }
-          });
-          selectFuncao.innerHTML = funcoesHtml.join("");
-        }
-
-        var selectHab = document.getElementById("regra-habilitacao");
-        if (selectHab) {
-          var habsHtml = ['<option value="">Todas as habilitações / NRs</option>'];
-          (dados.habilitacoes || []).forEach(function (item) {
-            var valor = typeof item === "string" ? item : (item.habilitacao || item.nome || "");
-            if (valor) {
-              habsHtml.push('<option value="' + escapar(valor) + '">' + escapar(valor) + '</option>');
-            }
-          });
-          selectHab.innerHTML = habsHtml.join("");
-        }
+        SF.ui.preencherSelectCatalogo(document.getElementById("regra-cargo"), dados.cargos || [], "Todos os cargos", "", "cargo");
+        SF.ui.preencherSelectCatalogo(document.getElementById("regra-funcao"), dados.funcoes || [], "Todas as funções", "", "funcao");
+        SF.ui.preencherSelectCatalogo(document.getElementById("regra-habilitacao"), dados.habilitacoes || [], "Todas as habilitações / NRs", "", "habilitacao");
 
         var corpo = document.getElementById("corpo-regras");
         if (regras.length === 0) {
@@ -165,45 +123,9 @@
     if (regra) {
       document.getElementById("regra-produto").value = regra.produto_id;
       document.getElementById("regra-setor").value = regra.setor_id || "";
-      var selectCargo = document.getElementById("regra-cargo");
-      if (selectCargo && regra.cargo) {
-        var temOpcao = Array.from(selectCargo.options).some(function (opt) { return opt.value === regra.cargo; });
-        if (!temOpcao) {
-          var opt = document.createElement("option");
-          opt.value = regra.cargo;
-          opt.textContent = regra.cargo;
-          selectCargo.appendChild(opt);
-        }
-      }
-      if (selectCargo) {
-        selectCargo.value = regra.cargo || "";
-      }
-      var campoFuncao = document.getElementById("regra-funcao");
-      if (campoFuncao && regra.funcao) {
-        var temOpcaoF = Array.from(campoFuncao.options).some(function (opt) { return opt.value === regra.funcao; });
-        if (!temOpcaoF) {
-          var optF = document.createElement("option");
-          optF.value = regra.funcao;
-          optF.textContent = regra.funcao;
-          campoFuncao.appendChild(optF);
-        }
-      }
-      if (campoFuncao) {
-        campoFuncao.value = regra.funcao || "";
-      }
-      var campoHab = document.getElementById("regra-habilitacao");
-      if (campoHab && regra.habilitacao) {
-        var temOpcaoH = Array.from(campoHab.options).some(function (opt) { return opt.value === regra.habilitacao; });
-        if (!temOpcaoH) {
-          var optH = document.createElement("option");
-          optH.value = regra.habilitacao;
-          optH.textContent = regra.habilitacao;
-          campoHab.appendChild(optH);
-        }
-      }
-      if (campoHab) {
-        campoHab.value = regra.habilitacao || "";
-      }
+      SF.ui.selecionarOuAdicionar(document.getElementById("regra-cargo"), regra.cargo);
+      SF.ui.selecionarOuAdicionar(document.getElementById("regra-funcao"), regra.funcao);
+      SF.ui.selecionarOuAdicionar(document.getElementById("regra-habilitacao"), regra.habilitacao);
       var selectFunc = document.getElementById("regra-funcionario");
       if (selectFunc) {
         selectFunc.value = regra.funcionario_id || "";

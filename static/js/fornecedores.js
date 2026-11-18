@@ -11,9 +11,7 @@
   var podeEditar = SF.sessao.pode("produtos");
 
   function mostrarAviso(texto, tipo) {
-    aviso.className = "alert alert-" + tipo;
-    aviso.textContent = texto;
-    aviso.focus();
+    SF.ui.mostrarAviso(aviso, texto, tipo);
   }
 
   function criarLinhaFornecedorHtml(fornecedor) {

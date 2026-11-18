@@ -229,48 +229,16 @@
   var funcoesDisponiveis = [];
   var habilitacoesDisponiveis = [];
 
-  function renderizarOpcoesCatalogo(selectEl, listaItens, placeholder, valorSelecionado, chaveProp) {
-    if (!selectEl) return;
-    var opcoes = ['<option value="">' + escapar(placeholder || "Selecione...") + '</option>'];
-    var valorEncontrado = false;
-    var chave = chaveProp || "nome";
-    (listaItens || []).forEach(function (item) {
-      var nome = typeof item === "string" ? item : (item[chave] || item.nome || "");
-      if (!nome) return;
-      var selecionado = Boolean(valorSelecionado && nome.toLowerCase() === String(valorSelecionado).toLowerCase());
-      if (selecionado) {
-        valorEncontrado = true;
-      }
-      opcoes.push(
-        '<option value="' + escapar(nome) + '"' + (selecionado ? " selected" : "") + ">" +
-          escapar(nome) +
-        "</option>"
-      );
-    });
-    // Se for edição e o colaborador possuir valor pré-existente fora do catálogo, preserva a opção:
-    if (valorSelecionado && !valorEncontrado) {
-      opcoes.push(
-        '<option value="' + escapar(valorSelecionado) + '" selected>' +
-          escapar(valorSelecionado) +
-        "</option>"
-      );
-    }
-    selectEl.innerHTML = opcoes.join("");
-    if (valorSelecionado) {
-      selectEl.value = valorSelecionado;
-    }
-  }
-
   function renderizarOpcoesCargos(selectEl, listaCargos, placeholder, valorSelecionado) {
-    renderizarOpcoesCatalogo(selectEl, listaCargos, placeholder, valorSelecionado, "cargo");
+    SF.ui.preencherSelectCatalogo(selectEl, listaCargos, placeholder, valorSelecionado, "cargo");
   }
 
   function renderizarOpcoesFuncoes(selectEl, listaFuncoes, placeholder, valorSelecionado) {
-    renderizarOpcoesCatalogo(selectEl, listaFuncoes, placeholder, valorSelecionado, "funcao");
+    SF.ui.preencherSelectCatalogo(selectEl, listaFuncoes, placeholder, valorSelecionado, "funcao");
   }
 
   function renderizarOpcoesHabilitacoes(selectEl, listaHabs, placeholder, valorSelecionado) {
-    renderizarOpcoesCatalogo(selectEl, listaHabs, placeholder, valorSelecionado, "habilitacao");
+    SF.ui.preencherSelectCatalogo(selectEl, listaHabs, placeholder, valorSelecionado, "habilitacao");
   }
 
   /* Carrega o catálogo de cargos (RH), funções (SST) e habilitações (NRs) */

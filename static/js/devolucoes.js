@@ -23,9 +23,7 @@
   };
 
   function mostrarAviso(texto, tipo) {
-    aviso.className = "alert alert-" + tipo;
-    aviso.textContent = texto;
-    aviso.focus();
+    SF.ui.mostrarAviso(aviso, texto, tipo);
   }
 
   function montarOpcoesSelect(listaOpcoes) {
