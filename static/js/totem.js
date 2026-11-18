@@ -4,7 +4,7 @@
    Fluxo em passos (máquina de estados visual):
    1. Boas-vindas: escolha do método de identificação (Matrícula).
    2. Matrícula: digitação e validação em /api/totem/identificar/.
-   3. PIN: digitação de 4 dígitos e autenticação em /api/totem/login/.
+   3. PIN: digitação de 4 a 6 dígitos e autenticação em /api/totem/login/.
    3.5. Troca de PIN (1º acesso): criação obrigatória de PIN pessoal quando
         o colaborador ainda estiver com PIN provisório (/api/totem/trocar-pin/).
    4. Vitrine: exibição dos EPIs e consumíveis calculados pelo servidor
@@ -15,6 +15,8 @@
 
 (function () {
   var TAMANHO_MAX_MATRICULA = 12;
+  var TAMANHO_MIN_PIN = 4;
+  var TAMANHO_MAX_PIN = 6;
 
   /* Estado atual do atendimento no Totem */
   var estado = {
@@ -31,6 +33,7 @@
   var inputMatricula = document.getElementById("input-matricula");
   var inputNovoPin = document.getElementById("input-novo-pin");
   var inputConfirmaPin = document.getElementById("input-confirma-pin");
+  var btnPinEntrar = document.getElementById("btn-pin-entrar");
   var campoNovoPinAtivo = inputNovoPin;
   var gridProdutos = document.getElementById("grid-produtos-totem");
   var modalMinhasSolsEl = document.getElementById("modal-minhas-sols");
@@ -168,9 +171,9 @@
       });
   }
 
-  /* ---------- Passo 3: PIN de 4 Dígitos ---------- */
+  /* ---------- Passo 3: PIN de 4 a 6 Dígitos ---------- */
   function atualizarPinDots() {
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < TAMANHO_MAX_PIN; i++) {
       var bolinha = document.getElementById("dot-" + i);
       if (bolinha) {
         if (i < estado.pin.length) {
@@ -180,16 +183,19 @@
         }
       }
     }
+    if (btnPinEntrar) {
+      btnPinEntrar.disabled = estado.pin.length < TAMANHO_MIN_PIN;
+    }
   }
 
   document.querySelectorAll(".tecla-pin").forEach(function (botaoPin) {
     botaoPin.addEventListener("click", function () {
-      if (estado.pin.length < 4) {
+      if (estado.pin.length < TAMANHO_MAX_PIN) {
         estado.pin += this.dataset.val;
         atualizarPinDots();
 
-        if (estado.pin.length === 4) {
-          /* Aguarda 150ms para o colaborador ver a 4ª bolinha preenchida antes de enviar */
+        if (estado.pin.length === TAMANHO_MAX_PIN) {
+          /* Aguarda 150ms para o colaborador ver a 6ª bolinha preenchida antes de enviar */
           setTimeout(autenticarPin, 150);
         }
       }
@@ -211,6 +217,14 @@
     btnPinLimpar.addEventListener("click", function () {
       estado.pin = "";
       atualizarPinDots();
+    });
+  }
+
+  if (btnPinEntrar) {
+    btnPinEntrar.addEventListener("click", function () {
+      if (estado.pin.length >= TAMANHO_MIN_PIN) {
+        autenticarPin();
+      }
     });
   }
 
@@ -264,13 +278,13 @@
       }
       var digito = this.dataset.val;
       var alvo = campoNovoPinAtivo || inputNovoPin;
-      if (alvo === inputNovoPin && inputNovoPin.value.length >= 4 && inputConfirmaPin.value.length < 4) {
+      if (alvo === inputNovoPin && inputNovoPin.value.length >= TAMANHO_MAX_PIN && inputConfirmaPin.value.length < TAMANHO_MAX_PIN) {
         alvo = inputConfirmaPin;
         campoNovoPinAtivo = inputConfirmaPin;
       }
-      if (alvo.value.length < 4) {
+      if (alvo.value.length < TAMANHO_MAX_PIN) {
         alvo.value += digito;
-        if (alvo === inputNovoPin && inputNovoPin.value.length === 4) {
+        if (alvo === inputNovoPin && inputNovoPin.value.length === TAMANHO_MAX_PIN) {
           campoNovoPinAtivo = inputConfirmaPin;
         }
       }
@@ -303,7 +317,7 @@
     var novoPin = inputNovoPin ? inputNovoPin.value.trim() : "";
     var confirmacaoPin = inputConfirmaPin ? inputConfirmaPin.value.trim() : "";
     if (!novoPin || !confirmacaoPin) {
-      alert("Digite e confirme seu novo PIN pessoal de 4 dígitos.");
+      alert("Digite e confirme seu novo PIN pessoal (4 a 6 dígitos).");
       return;
     }
     if (novoPin !== confirmacaoPin) {
@@ -771,10 +785,10 @@
       }
     } else if (passoAtual.id === "passo-pin") {
       if (evento.key >= "0" && evento.key <= "9") {
-        if (estado.pin.length < 4) {
+        if (estado.pin.length < TAMANHO_MAX_PIN) {
           estado.pin += evento.key;
           atualizarPinDots();
-          if (estado.pin.length === 4) {
+          if (estado.pin.length === TAMANHO_MAX_PIN) {
             setTimeout(autenticarPin, 150);
           }
         }
@@ -782,6 +796,10 @@
         if (estado.pin.length > 0) {
           estado.pin = estado.pin.slice(0, -1);
           atualizarPinDots();
+        }
+      } else if (evento.key === "Enter") {
+        if (estado.pin.length >= TAMANHO_MIN_PIN) {
+          autenticarPin();
         }
       }
     } else if (passoAtual.id === "passo-trocar-pin") {

@@ -126,16 +126,18 @@
       </div>
       <h2 class="totem-titulo" id="titulo-passo-pin">Informe seu PIN</h2>
       <p class="totem-subtitulo">
-        Olá, <strong id="pin-colaborador-nome">Colaborador</strong>. Digite sua senha de acesso de 4 dígitos.
+        Olá, <strong id="pin-colaborador-nome">Colaborador</strong>. Digite seu PIN de acesso (4 a 6 dígitos).
       </p>
 
       <div class="totem-teclado-container">
-        <!-- Indicador das 4 bolinhas preenchidas -->
+        <!-- Indicador de até 6 bolinhas preenchidas -->
         <div class="totem-pin-dots" id="pin-dots" aria-hidden="true">
           <div class="pin-dot" id="dot-0"></div>
           <div class="pin-dot" id="dot-1"></div>
           <div class="pin-dot" id="dot-2"></div>
           <div class="pin-dot" id="dot-3"></div>
+          <div class="pin-dot" id="dot-4"></div>
+          <div class="pin-dot" id="dot-5"></div>
         </div>
 
         <div class="totem-teclado" role="group" aria-label="Teclado numérico do PIN">
@@ -154,6 +156,10 @@
             <i class="bi bi-backspace" aria-hidden="true"></i>
           </button>
         </div>
+
+        <button type="button" class="btn-solicitar-retirada w-100 mt-3" id="btn-pin-entrar" disabled>
+          <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i> Confirmar PIN
+        </button>
       </div>
     </section>
 
@@ -164,20 +170,20 @@
       </div>
       <h2 class="totem-titulo" id="titulo-passo-trocar-pin">Crie seu PIN Pessoal</h2>
       <p class="totem-subtitulo">
-        Primeiro acesso: crie seu PIN pessoal secreto (4 dígitos). Ele substituirá o PIN provisório entregue pelo RH.
+        Primeiro acesso: crie seu PIN pessoal secreto (4 a 6 dígitos). Ele substituirá o PIN provisório entregue pelo RH.
       </p>
 
       <div class="totem-teclado-container">
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label for="input-novo-pin" class="form-label small fw-semibold mb-1">Novo PIN (4 dígitos)</label>
+            <label for="input-novo-pin" class="form-label small fw-semibold mb-1">Novo PIN (4 a 6 dígitos)</label>
             <input type="password" id="input-novo-pin" class="form-control text-center fw-bold fs-4"
-                   inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+                   inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
           </div>
           <div class="col-6">
             <label for="input-confirma-pin" class="form-label small fw-semibold mb-1">Confirmar novo PIN</label>
             <input type="password" id="input-confirma-pin" class="form-control text-center fw-bold fs-4"
-                   inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+                   inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
           </div>
         </div>
 
