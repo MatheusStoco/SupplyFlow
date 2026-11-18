@@ -20,7 +20,7 @@
       <header class="topbar" id="topbar"></header>
 
       <main class="conteudo">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div>
             <h1 class="pagina-titulo mb-1">Funcionários (Operacional / Totem)</h1>
             <p class="pagina-descricao mb-0">
@@ -36,7 +36,7 @@
               <i class="bi bi-person-plus" aria-hidden="true"></i> Novo Funcionário
             </button>
           </div>
-        </div>
+        </header>
 
         <div class="alert alert-success alert-dismissible fade show d-none mb-4" role="status" id="alerta-feedback-rh">
           <div id="alerta-feedback-rh-texto"></div>
@@ -44,7 +44,7 @@
         </div>
 
         <!-- Filtros e Busca -->
-        <div class="cartao p-3 mb-4" role="search" aria-label="Filtrar funcionários">
+        <section class="cartao p-3 mb-4" role="search" aria-label="Filtrar funcionários">
           <div class="row g-3">
             <div class="col-md-5">
               <label for="filtro-termo" class="visually-hidden">Buscar por nome, matrícula ou cargo</label>
@@ -71,7 +71,7 @@
               <button type="button" id="btn-filtrar" class="btn btn-outline-secondary">Filtrar</button>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Tabela de Funcionários -->
         <section class="cartao" aria-label="Lista de funcionários">
@@ -105,7 +105,7 @@
       <div class="modal-content rounded-4 border-0 shadow">
         <form id="form-funcionario">
           <div class="modal-header border-bottom">
-            <h5 class="modal-title fw-bold" id="modalFuncTitulo">Novo Funcionário Operacional</h5>
+            <h2 class="modal-title h5 fw-bold" id="modalFuncTitulo">Novo Funcionário Operacional</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body p-4">
@@ -276,7 +276,7 @@
       <div class="modal-content rounded-4 border-0 shadow">
         <form id="form-mudar-funcao">
           <div class="modal-header border-bottom">
-            <h5 class="modal-title fw-bold" id="modalMudarFuncaoTitulo">Mudar Cargo / Função / Transferir Setor</h5>
+            <h2 class="modal-title h5 fw-bold" id="modalMudarFuncaoTitulo">Mudar Cargo / Função / Transferir Setor</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body p-4">
@@ -347,7 +347,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content rounded-4 border-0 shadow">
         <div class="modal-header border-bottom">
-          <h5 class="modal-title fw-bold" id="modalDesligamentoTitulo">Checklist de Desligamento e Nada Consta</h5>
+          <h2 class="modal-title h5 fw-bold" id="modalDesligamentoTitulo">Checklist de Desligamento e Nada Consta</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body p-4">
@@ -374,7 +374,7 @@
             <div class="mb-3" id="desligamento-status-devolucoes"></div>
 
             <div>
-              <h6 class="fw-bold small text-uppercase text-secondary mb-2">EPIs em posse do colaborador</h6>
+              <h3 class="h6 fw-bold small text-uppercase text-secondary mb-2">EPIs em posse do colaborador</h3>
               <div id="desligamento-lista-epis" class="border rounded-3 p-3 caixa-superficie">
                 <p class="text-muted small mb-0">Nenhum EPI pendente listado.</p>
               </div>
@@ -402,7 +402,7 @@
       <div class="modal-content rounded-4 border-0 shadow">
         <form id="form-importar-csv">
           <div class="modal-header border-bottom">
-            <h5 class="modal-title fw-bold" id="modalImportarCsvTitulo">Importar Funcionários em Lote (CSV)</h5>
+            <h2 class="modal-title h5 fw-bold" id="modalImportarCsvTitulo">Importar Funcionários em Lote (CSV)</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body p-4">
