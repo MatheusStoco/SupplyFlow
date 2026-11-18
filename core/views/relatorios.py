@@ -78,6 +78,131 @@ def _csv(request, nome, cabecalho, linhas, descricao):
 # ---------------------------------------------------------------------------
 # Histórico de movimentações (RF-44, RF-45, RF-47, RF-49)
 # ---------------------------------------------------------------------------
+def _filtrar_pessoa_historico(qs, prefixo, filtros):
+    if filtros["termo"]:
+        qs = qs.filter(
+            Q(**{f"{prefixo}__nome__icontains": filtros["termo"]})
+            | Q(**{f"{prefixo}__codigo_matricula__icontains": filtros["termo"]})
+        )
+    if filtros["setor_id"]:
+        qs = qs.filter(**{f"{prefixo}__setor_id": filtros["setor_id"]})
+    if filtros["cargo"]:
+        qs = qs.filter(**{f"{prefixo}__cargo__iexact": filtros["cargo"]})
+    return qs
+
+
+def _coletar_entregas_historico(filtros):
+    qs = _no_periodo(
+        Entrega.objects.select_related("colaborador", "almoxarife", "solicitacao"),
+        "data", filtros["inicio"], filtros["fim"],
+    )
+    qs = _filtrar_pessoa_historico(qs, "colaborador", filtros)
+    if filtros["produto_id"]:
+        qs = qs.filter(produto_id=filtros["produto_id"])
+    if filtros["responsavel"]:
+        qs = qs.filter(almoxarife__nome__icontains=filtros["responsavel"])
+    if filtros["status"]:
+        qs = qs.filter(solicitacao__status=filtros["status"])
+    return [
+        {
+            "data": e.data, "tipo": "ENTREGA", "funcionario": e.colaborador.nome,
+            "matricula": e.colaborador.codigo_matricula, "setor": e.setor_nome,
+            "centro_custo": e.centro_custo, "produto": e.produto_nome, "quantidade": e.quantidade,
+            "ca": e.ca, "lote": e.lote, "valor": float(e.custo_unitario) * e.quantidade,
+            "responsavel": e.almoxarife.nome if e.almoxarife else "",
+            "solicitacao": e.solicitacao.codigo, "detalhe": "",
+        }
+        for e in qs[:LIMITE]
+    ]
+
+
+def _coletar_devolucoes_historico(filtros):
+    qs = _no_periodo(
+        Devolucao.objects.select_related("solicitacao__solicitante__setor", "registrado_por")
+        .prefetch_related("solicitacao__itens__produto"),
+        "data", filtros["inicio"], filtros["fim"],
+    )
+    qs = _filtrar_pessoa_historico(qs, "solicitacao__solicitante", filtros)
+    if filtros["produto_id"]:
+        qs = qs.filter(solicitacao__itens__produto_id=filtros["produto_id"])
+    if filtros["responsavel"]:
+        qs = qs.filter(registrado_por__nome__icontains=filtros["responsavel"])
+    if filtros["status"]:
+        qs = qs.filter(solicitacao__status=filtros["status"])
+    linhas = []
+    for d in qs[:LIMITE]:
+        colaborador = d.solicitacao.solicitante
+        item = d.solicitacao.itens.first()
+        linhas.append({
+            "data": d.data, "tipo": "DEVOLUCAO", "funcionario": colaborador.nome,
+            "matricula": colaborador.codigo_matricula,
+            "setor": colaborador.setor.nome if colaborador.setor else "",
+            "centro_custo": colaborador.setor.centro_custo if colaborador.setor else "",
+            "produto": item.produto.nome if item else "", "quantidade": None, "ca": "", "lote": "",
+            "valor": None, "responsavel": d.registrado_por.nome if d.registrado_por else "",
+            "solicitacao": d.solicitacao.codigo,
+            "detalhe": (
+                "Dispensada: " + d.observacao
+                if d.dispensada
+                else f"{d.get_condicao_display()} → {d.get_destinacao_display()}"
+            ),
+        })
+    return linhas
+
+
+def _coletar_entradas_historico(filtros):
+    qs = _no_periodo(
+        MovimentacaoEstoque.objects.filter(tipo=MovimentacaoEstoque.ENTRADA)
+        .select_related("produto", "usuario", "estoque__totem"),
+        "data", filtros["inicio"], filtros["fim"],
+    )
+    if filtros["produto_id"]:
+        qs = qs.filter(produto_id=filtros["produto_id"])
+    if filtros["responsavel"]:
+        qs = qs.filter(usuario__nome__icontains=filtros["responsavel"])
+    return [
+        {
+            "data": m.data, "tipo": "ENTRADA", "funcionario": "", "matricula": "", "setor": "",
+            "centro_custo": "", "produto": m.produto.nome, "quantidade": m.quantidade, "ca": "",
+            "lote": m.lote, "valor": None, "responsavel": m.usuario.nome if m.usuario else "",
+            "solicitacao": "", "detalhe": f"{m.estoque.totem.codigo} · {m.observacao}".strip(" ·"),
+        }
+        for m in qs[:LIMITE]
+    ]
+
+
+def _coletar_solicitacoes_historico(filtros):
+    qs = _no_periodo(
+        Solicitacao.objects.select_related("solicitante__setor", "decisao__aprovador")
+        .prefetch_related("itens__produto"),
+        "data_solicitacao", filtros["inicio"], filtros["fim"],
+    )
+    qs = _filtrar_pessoa_historico(qs, "solicitante", filtros)
+    if filtros["produto_id"]:
+        qs = qs.filter(itens__produto_id=filtros["produto_id"])
+    if filtros["status"]:
+        qs = qs.filter(status=filtros["status"])
+    if filtros["responsavel"]:
+        qs = qs.filter(decisao__aprovador__nome__icontains=filtros["responsavel"])
+    linhas = []
+    for s in qs.distinct()[:LIMITE]:
+        item = s.itens.first()
+        decisao = getattr(s, "decisao", None)
+        linhas.append({
+            "data": s.data_solicitacao, "tipo": "SOLICITACAO", "funcionario": s.solicitante.nome,
+            "matricula": s.solicitante.codigo_matricula,
+            "setor": s.solicitante.setor.nome if s.solicitante.setor else "",
+            "centro_custo": s.solicitante.setor.centro_custo if s.solicitante.setor else "",
+            "produto": item.produto.nome if item else "",
+            "quantidade": item.quantidade_solicitada if item else None, "ca": "", "lote": "",
+            "valor": float(s.valor_total_estimado),
+            "responsavel": decisao.aprovador.nome if decisao and decisao.aprovador else "",
+            "solicitacao": s.codigo,
+            "detalhe": f"{estados.rotulo(s.status)} · {s.motivo_categoria or ''}".strip(" ·"),
+        })
+    return linhas
+
+
 @require_GET
 @api_backoffice("ver")
 def api_historico(request):
@@ -87,103 +212,30 @@ def api_historico(request):
         inicio, fim = _periodo(request)
     except ValueError as e:
         return erro(str(e) if "maior" in str(e) else "Data inválida: use AAAA-MM-DD.")
+
     tipo = (request.GET.get("tipo") or "").upper()
-    termo = (request.GET.get("funcionario") or "").strip()
-    setor_id = request.GET.get("setor") or ""
-    cargo = (request.GET.get("cargo") or "").strip()
-    produto_id = request.GET.get("produto") or ""
-    status = (request.GET.get("status") or "").upper()
-    responsavel = (request.GET.get("responsavel") or "").strip()
+    filtros = {
+        "inicio": inicio,
+        "fim": fim,
+        "termo": (request.GET.get("funcionario") or "").strip(),
+        "setor_id": request.GET.get("setor") or "",
+        "cargo": (request.GET.get("cargo") or "").strip(),
+        "produto_id": request.GET.get("produto") or "",
+        "status": (request.GET.get("status") or "").upper(),
+        "responsavel": (request.GET.get("responsavel") or "").strip(),
+    }
 
     linhas = []
-
-    def filtra_pessoa(qs, prefixo):
-        if termo:
-            qs = qs.filter(Q(**{f"{prefixo}__nome__icontains": termo}) |
-                           Q(**{f"{prefixo}__codigo_matricula__icontains": termo}))
-        if setor_id:
-            qs = qs.filter(**{f"{prefixo}__setor_id": setor_id})
-        if cargo:
-            qs = qs.filter(**{f"{prefixo}__cargo__iexact": cargo})
-        return qs
-
     if tipo in ("", "ENTREGA"):
-        qs = _no_periodo(Entrega.objects.select_related("colaborador", "almoxarife", "solicitacao"), "data", inicio, fim)
-        qs = filtra_pessoa(qs, "colaborador")
-        if produto_id:
-            qs = qs.filter(produto_id=produto_id)
-        if responsavel:
-            qs = qs.filter(almoxarife__nome__icontains=responsavel)
-        if status:
-            qs = qs.filter(solicitacao__status=status)
-        for e in qs[:LIMITE]:
-            linhas.append({"data": e.data, "tipo": "ENTREGA", "funcionario": e.colaborador.nome,
-                           "matricula": e.colaborador.codigo_matricula, "setor": e.setor_nome,
-                           "centro_custo": e.centro_custo, "produto": e.produto_nome, "quantidade": e.quantidade,
-                           "ca": e.ca, "lote": e.lote, "valor": float(e.custo_unitario) * e.quantidade,
-                           "responsavel": e.almoxarife.nome if e.almoxarife else "",
-                           "solicitacao": e.solicitacao.codigo, "detalhe": ""})
-
+        linhas.extend(_coletar_entregas_historico(filtros))
     if tipo in ("", "DEVOLUCAO"):
-        qs = _no_periodo(Devolucao.objects.select_related("solicitacao__solicitante__setor", "registrado_por")
-                         .prefetch_related("solicitacao__itens__produto"), "data", inicio, fim)
-        qs = filtra_pessoa(qs, "solicitacao__solicitante")
-        if produto_id:
-            qs = qs.filter(solicitacao__itens__produto_id=produto_id)
-        if responsavel:
-            qs = qs.filter(registrado_por__nome__icontains=responsavel)
-        if status:
-            qs = qs.filter(solicitacao__status=status)
-        for d in qs[:LIMITE]:
-            colaborador = d.solicitacao.solicitante
-            item = d.solicitacao.itens.first()
-            linhas.append({"data": d.data, "tipo": "DEVOLUCAO", "funcionario": colaborador.nome,
-                           "matricula": colaborador.codigo_matricula,
-                           "setor": colaborador.setor.nome if colaborador.setor else "",
-                           "centro_custo": colaborador.setor.centro_custo if colaborador.setor else "",
-                           "produto": item.produto.nome if item else "", "quantidade": None, "ca": "", "lote": "",
-                           "valor": None, "responsavel": d.registrado_por.nome if d.registrado_por else "",
-                           "solicitacao": d.solicitacao.codigo,
-                           "detalhe": "Dispensada: " + d.observacao if d.dispensada
-                           else f"{d.get_condicao_display()} → {d.get_destinacao_display()}"})
-
+        linhas.extend(_coletar_devolucoes_historico(filtros))
     # Entradas de estoque não têm funcionário/setor/cargo/status: só entram sem esses filtros
-    if tipo in ("", "ENTRADA") and not (termo or setor_id or cargo or status):
-        qs = _no_periodo(MovimentacaoEstoque.objects.filter(tipo=MovimentacaoEstoque.ENTRADA)
-                         .select_related("produto", "usuario", "estoque__totem"), "data", inicio, fim)
-        if produto_id:
-            qs = qs.filter(produto_id=produto_id)
-        if responsavel:
-            qs = qs.filter(usuario__nome__icontains=responsavel)
-        for m in qs[:LIMITE]:
-            linhas.append({"data": m.data, "tipo": "ENTRADA", "funcionario": "", "matricula": "", "setor": "",
-                           "centro_custo": "", "produto": m.produto.nome, "quantidade": m.quantidade, "ca": "",
-                           "lote": m.lote, "valor": None, "responsavel": m.usuario.nome if m.usuario else "",
-                           "solicitacao": "", "detalhe": f"{m.estoque.totem.codigo} · {m.observacao}".strip(" ·")})
-
+    tem_filtro_pessoa = bool(filtros["termo"] or filtros["setor_id"] or filtros["cargo"] or filtros["status"])
+    if tipo in ("", "ENTRADA") and not tem_filtro_pessoa:
+        linhas.extend(_coletar_entradas_historico(filtros))
     if tipo == "SOLICITACAO":
-        qs = _no_periodo(Solicitacao.objects.select_related("solicitante__setor", "decisao__aprovador")
-                         .prefetch_related("itens__produto"), "data_solicitacao", inicio, fim)
-        qs = filtra_pessoa(qs, "solicitante")
-        if produto_id:
-            qs = qs.filter(itens__produto_id=produto_id)
-        if status:
-            qs = qs.filter(status=status)
-        if responsavel:
-            qs = qs.filter(decisao__aprovador__nome__icontains=responsavel)
-        for s in qs.distinct()[:LIMITE]:
-            item = s.itens.first()
-            decisao = getattr(s, "decisao", None)
-            linhas.append({"data": s.data_solicitacao, "tipo": "SOLICITACAO", "funcionario": s.solicitante.nome,
-                           "matricula": s.solicitante.codigo_matricula,
-                           "setor": s.solicitante.setor.nome if s.solicitante.setor else "",
-                           "centro_custo": s.solicitante.setor.centro_custo if s.solicitante.setor else "",
-                           "produto": item.produto.nome if item else "",
-                           "quantidade": item.quantidade_solicitada if item else None, "ca": "", "lote": "",
-                           "valor": float(s.valor_total_estimado),
-                           "responsavel": decisao.aprovador.nome if decisao and decisao.aprovador else "",
-                           "solicitacao": s.codigo,
-                           "detalhe": f"{estados.rotulo(s.status)} · {s.motivo_categoria or ''}".strip(" ·")})
+        linhas.extend(_coletar_solicitacoes_historico(filtros))
 
     linhas.sort(key=lambda l: l["data"], reverse=True)
     linhas = linhas[:LIMITE]
