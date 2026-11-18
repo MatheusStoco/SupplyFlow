@@ -1,10 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Marca do SupplyFlow: capacete industrial sobre quadrado Laranja de Segurança -->
-  <rect width="32" height="32" rx="4" fill="#f97316"/>
-  <g transform="translate(4 4)" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/>
-    <path d="M14 6a6 6 0 0 1 6 6v3"/>
-    <path d="M4 15v-3a6 6 0 0 1 6-6"/>
-    <rect x="2" y="15" width="20" height="4" rx="1"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <!-- SupplyFlow — favicon (versão "Pequeno": só o S, traço grosso, legível em 16 px) -->
+  <rect width="64" height="64" rx="15" fill="#F97316"/>
+  <path d="M44 14H27a9 9 0 0 0 0 18h10a9 9 0 0 1 0 18H20" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

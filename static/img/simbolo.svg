@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <!-- SupplyFlow — símbolo completo: o S é o caminho do material (ponto = estoque, seta = entrega) -->
+  <rect width="64" height="64" rx="15" fill="#F97316"/>
+  <path d="M43 13H27a9 9 0 0 0 0 18h10a9 9 0 0 1 0 18H25" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 41.5L15.5 49 26 56.5z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="43" cy="13" r="5.5" fill="#FFFFFF"/>
+</svg>
