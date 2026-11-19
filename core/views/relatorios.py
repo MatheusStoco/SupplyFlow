@@ -6,6 +6,7 @@ de estoque e decisões). Qualquer consulta pode ser exportada em CSV com
 para fora do sistema (LGPD, RNF-05).
 """
 import csv
+import hashlib
 from collections import Counter, defaultdict
 from datetime import datetime, time, timedelta
 
@@ -280,30 +281,56 @@ def api_ficha_epi(request, funcionario_id):
     if colaborador is None:
         return erro("Funcionário não encontrado.", status=404)
     so_epi = request.GET.get("todos") != "1"
-    entregas = Entrega.objects.filter(colaborador=colaborador).select_related("almoxarife", "solicitacao") \
+    entregas = (
+        Entrega.objects.filter(colaborador=colaborador)
+        .select_related("almoxarife", "solicitacao", "totem")
         .order_by("-data")
+    )
     if so_epi:
         entregas = entregas.filter(eh_epi=True)
     devolucoes = {d.entrega_original_id: d for d in Devolucao.objects.filter(entrega_original__colaborador=colaborador)}
 
-    linhas = [
-        {
+    def _selo_autenticacao(entrega_obj):
+        base = f"{entrega_obj.id}|{entrega_obj.solicitacao.codigo}|{colaborador.codigo_matricula}|{entrega_obj.data.isoformat()}"
+        return hashlib.sha256(base.encode("utf-8")).hexdigest()[:10].upper()
+
+    def _responsavel_entrega(entrega_obj):
+        # Evita exibir autoentrega quando o próprio colaborador (ex.: admin em teste) confirmou no totem
+        if entrega_obj.almoxarife_id is None or entrega_obj.almoxarife_id == colaborador.id:
+            ident_totem = (
+                entrega_obj.totem.codigo or entrega_obj.totem.nome
+                if entrega_obj.totem_id and entrega_obj.totem
+                else "Totem"
+            )
+            return f"Autoatendimento ({ident_totem})"
+        return entrega_obj.almoxarife.nome
+
+    def _info_devolucao(entrega_obj):
+        dev = devolucoes.get(entrega_obj.id)
+        if not dev:
+            return "", ""
+        if dev.dispensada:
+            return fmt(dev.data, "%d/%m/%Y"), "Dispensada"
+        return fmt(dev.data, "%d/%m/%Y"), (dev.get_condicao_display() if dev.condicao else "Devolvido")
+
+    linhas = []
+    for e in entregas:
+        dev_em, dev_cond = _info_devolucao(e)
+        linhas.append({
             "data": fmt(e.data, "%d/%m/%Y"),
             "data_hora": fmt(e.data, "%d/%m/%Y %H:%M"),
             "autenticacao_pin": bool(e.solicitacao_id),
+            "hash_autenticacao": _selo_autenticacao(e) if e.solicitacao_id else "",
             "produto": e.produto_nome,
             "ca": e.ca or "",
             "lote": e.lote or "",
             "quantidade": e.quantidade,
             "motivo": e.solicitacao.motivo_categoria or "Retirada regular",
             "solicitacao": e.solicitacao.codigo,
-            "almoxarife": e.almoxarife.nome if e.almoxarife else "",
-            "devolvido_em": fmt(devolucoes[e.id].data, "%d/%m/%Y") if e.id in devolucoes else "",
-            "condicao_devolucao": devolucoes[e.id].get_condicao_display() if e.id in devolucoes and
-            devolucoes[e.id].condicao else "",
-        }
-        for e in entregas
-    ]
+            "almoxarife": _responsavel_entrega(e),
+            "devolvido_em": dev_em,
+            "condicao_devolucao": dev_cond,
+        })
 
     if request.GET.get("formato") == "csv":
         return _csv(request, f"ficha-epi-{colaborador.codigo_matricula}",
@@ -315,10 +342,18 @@ def api_ficha_epi(request, funcionario_id):
 
     ficha_rh = rh.obter_ficha_rh(colaborador)
     desligamento = rh.resumo_desligamento(colaborador)
-    data_admissao = next(
-        (h.get("data", "").split(" ")[0] for h in ficha_rh.get("historico_funcional", []) if h.get("acao") == "ADMISSAO"),
-        "",
-    )
+    admissao_iso = ficha_rh.get("data_admissao") or ""
+    if admissao_iso and len(admissao_iso) == 10 and admissao_iso[4] == "-":
+        partes_adm = admissao_iso.split("-")
+        data_admissao = f"{partes_adm[2]}/{partes_adm[1]}/{partes_adm[0]}"
+    else:
+        data_admissao = (
+            next(
+                (h.get("data", "").split(" ")[0] for h in ficha_rh.get("historico_funcional", []) if h.get("acao") == "ADMISSAO"),
+                "",
+            )
+            or (fmt(colaborador.created_at, "%d/%m/%Y") if colaborador.created_at else "")
+        )
 
     registrar(request, "FICHA_EPI_CONSULTADA", colaborador, f"Consultou a ficha de EPI de {colaborador.nome}")
     return JsonResponse({
@@ -327,6 +362,7 @@ def api_ficha_epi(request, funcionario_id):
         "funcionario": {
             "nome": colaborador.nome,
             "matricula": colaborador.codigo_matricula,
+            "cpf": ficha_rh.get("cpf", ""),
             "cargo": colaborador.cargo or "",
             "funcao": ficha_rh.get("funcao", ""),
             "habilitacoes": ficha_rh.get("habilitacoes", []),

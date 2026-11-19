@@ -115,9 +115,19 @@
             <fieldset class="mb-3">
               <legend class="fs-6 fw-bold text-secondary mb-2">1. Dados Operacionais, Cargo (RH), Função (SST) e Habilitações (NRs)</legend>
 
-              <div class="mb-3">
-                <label for="func-nome" class="form-label small fw-semibold">Nome Completo *</label>
-                <input type="text" id="func-nome" class="form-control" required placeholder="Ex.: Lucas Moreira">
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-md-6">
+                  <label for="func-nome" class="form-label small fw-semibold">Nome Completo *</label>
+                  <input type="text" id="func-nome" class="form-control" required placeholder="Ex.: Lucas Moreira">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label for="func-cpf" class="form-label small fw-semibold">CPF (eSocial / NR-6)</label>
+                  <input type="text" id="func-cpf" class="form-control" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label for="func-data-admissao" class="form-label small fw-semibold">Data de Admissão</label>
+                  <input type="date" id="func-data-admissao" class="form-control">
+                </div>
               </div>
 
               <div class="row g-2 mb-3">

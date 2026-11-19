@@ -35,6 +35,8 @@ def _func_json(u, ficha_rh=None):
         "email": u.email or "—",
         "cargo": u.cargo or "Colaborador",
         "funcao": ficha.get("funcao", ""),
+        "cpf": ficha.get("cpf", ""),
+        "data_admissao": ficha.get("data_admissao", ""),
         "habilitacoes": habilitacoes,
         "tem_habilitacao_vencida": any(h.get("vencida") for h in habilitacoes),
         "perfil": u.perfil,
@@ -116,9 +118,31 @@ def api_salvar_funcionario(request):
         funcao = _normalizar_funcao_catalogo(funcao) if funcao else funcao
         perfil = texto(dados.get("perfil"), "Perfil").upper() or "COLABORADOR"
         pin = texto(dados.get("pin"), "PIN")
+        cpf_informado = "cpf" in dados
+        cpf_bruto = texto(dados.get("cpf"), "CPF", maximo=20) if cpf_informado else None
+        admissao_informada = "data_admissao" in dados
+        data_admissao_bruta = texto(dados.get("data_admissao"), "Data de admissão", maximo=10) if admissao_informada else None
         tamanhos = _extrair_tamanhos(dados)
     except EntradaInvalida as e:
         return erro(str(e))
+
+    cpf = None
+    if cpf_informado:
+        if cpf_bruto:
+            cpf = rh.validar_cpf(cpf_bruto)
+            if cpf is None:
+                return erro("CPF inválido. Informe 11 dígitos válidos (ex.: 000.000.000-00).")
+        else:
+            cpf = ""
+
+    data_admissao = None
+    if admissao_informada:
+        if data_admissao_bruta:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data_admissao_bruta):
+                return erro("Data de admissão inválida. Use o formato AAAA-MM-DD.")
+            data_admissao = data_admissao_bruta
+        else:
+            data_admissao = ""
 
     habilitacoes_raw = dados.get("habilitacoes") if "habilitacoes" in dados else None
     if habilitacoes_raw is not None and isinstance(habilitacoes_raw, list):
@@ -218,9 +242,16 @@ def api_salvar_funcionario(request):
         or funcao_anterior.lower() != funcao_nova.lower()
         or setor_id_anterior != func.setor_id
     ):
+        partes_mudanca = []
+        if cargo_anterior.lower() != cargo_novo.lower():
+            partes_mudanca.append(f"Cargo: {cargo_anterior or '—'} → {cargo_novo or '—'}")
+        if funcao_anterior.lower() != funcao_nova.lower():
+            partes_mudanca.append(f"Função: {funcao_anterior or '—'} → {funcao_nova or '—'}")
+        if setor_id_anterior != func.setor_id:
+            partes_mudanca.append(f"Setor: {setor_anterior or '—'} → {setor_novo or '—'}")
         evento_funcional = {
             "acao": "MUDANCA_FUNCAO",
-            "descricao": f"Mudança funcional: {cargo_anterior or 'Colaborador'} → {cargo_novo or 'Colaborador'}",
+            "descricao": " · ".join(partes_mudanca) or "Atualização funcional",
             "cargo_anterior": cargo_anterior,
             "cargo_novo": cargo_novo,
             "funcao_anterior": funcao_anterior,
@@ -235,6 +266,8 @@ def api_salvar_funcionario(request):
         or pin_provisorio is not None
         or funcao is not None
         or habilitacoes is not None
+        or cpf is not None
+        or data_admissao is not None
     ):
         rh.salvar_metadados_rh(
             request,
@@ -244,6 +277,8 @@ def api_salvar_funcionario(request):
             evento_funcional=evento_funcional,
             funcao=funcao,
             habilitacoes=habilitacoes,
+            cpf=cpf,
+            data_admissao=data_admissao,
         )
 
     kit = None

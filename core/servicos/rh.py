@@ -62,6 +62,23 @@ def _fmt_data(dt, padrao="%d/%m/%Y %H:%M"):
     return timezone.localtime(dt).strftime(padrao)
 
 
+def validar_cpf(cpf):
+    """Valida e formata um CPF brasileiro ('000.000.000-00') ou retorna None se inválido."""
+    numeros = re.sub(r"\D", "", cpf or "")
+    if len(numeros) != 11 or numeros == numeros[0] * 11:
+        return None
+
+    def digito(base):
+        peso_inicial = len(base) + 1
+        soma = sum(int(n) * (peso_inicial - idx) for idx, n in enumerate(base))
+        resto = (soma * 10) % 11
+        return "0" if resto == 10 else str(resto)
+
+    if digito(numeros[:9]) != numeros[9] or digito(numeros[:10]) != numeros[10]:
+        return None
+    return f"{numeros[:3]}.{numeros[3:6]}.{numeros[6:9]}-{numeros[9:]}"
+
+
 def _parse_texto_habilitacao(parte):
     """Interpreta `'NR-35:2027-01-01'` ou `'NR-35'` em `{'nome', 'validade'}`."""
     parte = parte.strip()
@@ -124,6 +141,8 @@ def obter_ficha_rh(usuario):
     ficha = {
         "tamanhos": {"calcado": "", "luva": "", "vestimenta": ""},
         "funcao": "",
+        "cpf": "",
+        "data_admissao": "",
         "habilitacoes": [],
         "pin_provisorio": False,
         "historico_funcional": [],
@@ -157,6 +176,12 @@ def obter_ficha_rh(usuario):
 
         if "funcao" in det and det["funcao"] is not None:
             ficha["funcao"] = str(det["funcao"]).strip()
+
+        if "cpf" in det and det["cpf"] is not None:
+            ficha["cpf"] = str(det["cpf"]).strip()
+
+        if "data_admissao" in det and det["data_admissao"] is not None:
+            ficha["data_admissao"] = str(det["data_admissao"]).strip()
 
         if "habilitacoes" in det and isinstance(det["habilitacoes"], list):
             ficha["habilitacoes"] = normalizar_habilitacoes(det["habilitacoes"], hoje_iso=hoje_iso)
@@ -210,9 +235,11 @@ def salvar_metadados_rh(
     evento_funcional=None,
     funcao=None,
     habilitacoes=None,
+    cpf=None,
+    data_admissao=None,
 ):
-    """Salva/atualiza tamanhos de EPI, função operacional, habilitações/NRs, flag de
-    PIN provisório e eventos de movimentação funcional para um colaborador."""
+    """Salva/atualiza tamanhos de EPI, função operacional, CPF, data de admissão, habilitações/NRs,
+    flag de PIN provisório e eventos de movimentação funcional para um colaborador."""
     ficha_atual = obter_ficha_rh(usuario)
     novos_tamanhos = dict(ficha_atual["tamanhos"])
 
@@ -222,6 +249,8 @@ def salvar_metadados_rh(
                 novos_tamanhos[chave] = str(tamanhos[chave]).strip()
 
     nova_funcao = ficha_atual["funcao"] if funcao is None else str(funcao).strip()
+    novo_cpf = ficha_atual["cpf"] if cpf is None else str(cpf).strip()
+    nova_admissao = ficha_atual["data_admissao"] if data_admissao is None else str(data_admissao).strip()
 
     if habilitacoes is None:
         novas_habilitacoes = [
@@ -262,6 +291,8 @@ def salvar_metadados_rh(
     detalhes = {
         "tamanhos": novos_tamanhos,
         "funcao": nova_funcao,
+        "cpf": novo_cpf,
+        "data_admissao": nova_admissao,
         "habilitacoes": novas_habilitacoes,
         "pin_provisorio": novo_pin_provisorio,
     }

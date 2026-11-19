@@ -71,14 +71,23 @@
     }).join(" ");
   }
 
+  var ROTULOS_EVENTO_FUNCIONAL = {
+    ADMISSAO: "Admissão",
+    MUDANCA_FUNCAO: "Mudança de Função",
+    DESLIGAMENTO: "Desligamento",
+    REATIVACAO: "Reativação",
+    RH_METADADOS_ATUALIZADOS: "Atualização Cadastral"
+  };
+
   function criarLinhaHistoricoFuncionalHtml(item) {
     var dataTxt = item.data || item.criado_em || item.registrado_em || "—";
-    var eventoTxt = item.evento || item.tipo_rotulo || item.tipo || item.acao || "Movimentação funcional";
+    var chaveAcao = item.evento || item.tipo_rotulo || item.tipo || item.acao || "";
+    var eventoTxt = ROTULOS_EVENTO_FUNCIONAL[chaveAcao] || chaveAcao || "Movimentação funcional";
 
     var cargoAnterior = item.cargo_anterior || item.de_cargo || "";
     var cargoNovo = item.cargo_novo || item.para_cargo || item.cargo || "";
     var htmlCargo = escapar(cargoNovo || cargoAnterior || "—");
-    if (cargoAnterior && cargoNovo && cargoAnterior !== cargoNovo) {
+    if (cargoAnterior && cargoNovo && cargoAnterior.toLowerCase() !== cargoNovo.toLowerCase()) {
       htmlCargo =
         '<span class="text-muted text-decoration-line-through me-1">' + escapar(cargoAnterior) + "</span>" +
         '<i class="bi bi-arrow-right mx-1 text-secondary" aria-hidden="true"></i>' +
@@ -89,7 +98,7 @@
     var funcaoNovo = item.funcao_novo || item.funcao || "";
     if (funcaoAnterior || funcaoNovo) {
       var htmlFuncao = escapar(funcaoNovo || funcaoAnterior);
-      if (funcaoAnterior && funcaoNovo && funcaoAnterior !== funcaoNovo) {
+      if (funcaoAnterior && funcaoNovo && funcaoAnterior.toLowerCase() !== funcaoNovo.toLowerCase()) {
         htmlFuncao =
           '<span class="text-muted text-decoration-line-through me-1">' + escapar(funcaoAnterior) + "</span>" +
           '<i class="bi bi-arrow-right mx-1 text-secondary" aria-hidden="true"></i>' +
@@ -101,7 +110,7 @@
     var setorAnterior = item.setor_anterior || item.de_setor || "";
     var setorNovo = item.setor_novo || item.para_setor || item.setor || "";
     var htmlSetor = escapar(setorNovo || setorAnterior || "—");
-    if (setorAnterior && setorNovo && setorAnterior !== setorNovo) {
+    if (setorAnterior && setorNovo && setorAnterior.toLowerCase() !== setorNovo.toLowerCase()) {
       htmlSetor =
         '<span class="text-muted text-decoration-line-through me-1">' + escapar(setorAnterior) + "</span>" +
         '<i class="bi bi-arrow-right mx-1 text-secondary" aria-hidden="true"></i>' +
@@ -109,6 +118,11 @@
     }
 
     var obs = item.observacao || item.motivo || item.descricao || "";
+    /* Limpa descrições legadas redundantes como "Mudança funcional: X → X" */
+    var mRedundante = /^Mudança funcional:\s*(.+?)\s*→\s*\1$/i.exec(obs.trim());
+    if (mRedundante) {
+      obs = "Atualização de função/setor";
+    }
     var resp = item.responsavel || item.registrado_por || item.usuario || "";
     var htmlObs = obs ? escapar(obs) : "—";
     if (resp) {
@@ -118,7 +132,7 @@
     return (
       "<tr>" +
         '<td class="text-nowrap">' + escapar(dataTxt) + "</td>" +
-        '<td><span class="badge bg-light text-dark border">' + escapar(eventoTxt) + "</span></td>" +
+        '<td class="text-nowrap"><span class="badge bg-light text-dark border">' + escapar(eventoTxt) + "</span></td>" +
         "<td>" + htmlCargo + "</td>" +
         "<td>" + htmlSetor + "</td>" +
         "<td>" + htmlObs + "</td>" +
@@ -187,7 +201,9 @@
           '<div class="fw-bold mb-1"><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>NADA CONSTA — Situação Regular de Devolução de EPIs</div>' +
           '<div class="small">' +
             "Declaramos, para fins de desligamento, transferência ou auditoria interna, que o(a) colaborador(a) " +
-            "<strong>" + escapar(funcionario.nome || "") + "</strong>, matrícula <strong>" + escapar(funcionario.matricula || "") + "</strong>, " +
+            "<strong>" + escapar(funcionario.nome || "") + "</strong>" +
+            (funcionario.cpf ? (", CPF <strong>" + escapar(funcionario.cpf) + "</strong>") : "") +
+            ", matrícula <strong>" + escapar(funcionario.matricula || "") + "</strong>, " +
             "cargo <strong>" + escapar(funcionario.cargo || "—") + "</strong>, lotado(a) no setor <strong>" + escapar(formatarSetorFuncionario(funcionario)) + "</strong>, " +
             "<strong>não possui pendências obrigatórias de devolução de Equipamentos de Proteção Individual (EPI)</strong> registradas no SupplyFlow até " + escapar(emitidaEm) + "." +
           "</div>" +
@@ -218,7 +234,8 @@
         '<div class="col-12 col-md-6">' +
           '<div class="border-top border-dark pt-2 mt-4 mx-3">' +
             "<strong>" + escapar(funcionario.nome || "Colaborador") + "</strong><br>" +
-            '<span class="text-muted">Matrícula: ' + escapar(funcionario.matricula || "—") + "</span>" +
+            '<span class="text-muted">Matrícula: ' + escapar(funcionario.matricula || "—") +
+            (funcionario.cpf ? (" · CPF: " + escapar(funcionario.cpf)) : "") + "</span>" +
           "</div>" +
         "</div>" +
         '<div class="col-12 col-md-6">' +
@@ -232,19 +249,42 @@
     corpoNadaConsta.innerHTML = bannerStatusHtml + listaPendentesHtml + assinaturasHtml;
   }
 
+  function atualizarAvisoConformidadeNR6(dados) {
+    var avisoEl = document.getElementById("aviso-conformidade-nr6");
+    if (!avisoEl || !dados) return;
+    var emp = dados.empresa || {};
+    var func = dados.funcionario || {};
+    var pendencias = [];
+    if (!emp.cnpj) pendencias.push("CNPJ da empresa");
+    if (!emp.endereco) pendencias.push("Endereço do estabelecimento");
+    if (!func.cpf) pendencias.push("CPF do colaborador");
+
+    if (pendencias.length === 0) {
+      avisoEl.classList.add("d-none");
+      avisoEl.innerHTML = "";
+      return;
+    }
+    avisoEl.innerHTML =
+      '<i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>' +
+      "<strong>Pendências para validade plena em fiscalização NR-6:</strong> preencha " +
+      escapar(pendencias.join(", ")) +
+      " (em <em>Dados da Empresa</em> e no cadastro do colaborador) antes de emitir o PDF oficial.";
+    avisoEl.classList.remove("d-none");
+  }
+
   function renderizarCabecalhoNR6(dados) {
     var el = document.getElementById("ficha-nr6-cabecalho");
     if (!el) { return; }
     var emp = (dados && dados.empresa) || {};
-    var razao = emp.razao_social || "Empresa não configurada";
-    var cnpj = emp.cnpj || "CNPJ não configurado (configure em Dados da Empresa)";
+    var razao = emp.razao_social || "Não informado";
+    var cnpj = emp.cnpj || "Não informado";
     var estab = emp.estabelecimento || "—";
-    var end = [emp.endereco, emp.cidade].filter(Boolean).join(" — ") || "—";
+    var end = [emp.endereco, emp.cidade].filter(Boolean).join(" — ") || "Não informado";
     el.innerHTML =
       '<div class="ficha-nr6-cabecalho__topo">' +
         '<div>' +
           '<div class="ficha-nr6-cabecalho__titulo">FICHA DE CONTROLE E FORNECIMENTO DE EPI — NR-6</div>' +
-          '<div class="ficha-nr6-cabecalho__sub">Portaria MTP nº 672/2021 · Registro Individual de Entrega e Devolução</div>' +
+          '<div class="ficha-nr6-cabecalho__sub">NR-6 (Portaria MTP nº 2.175/2022, itens 6.5.1 e 6.5.1.1) · Autenticação Eletrônica: Lei nº 14.063/2020</div>' +
         '</div>' +
         '<div class="ficha-nr6-cabecalho__emissao">Emissão: ' + escapar((dados && dados.emitida_em) || "") + '</div>' +
       '</div>' +
@@ -254,6 +294,7 @@
         '<div><strong>Estabelecimento:</strong> ' + escapar(estab) + '</div>' +
         '<div><strong>Endereço:</strong> ' + escapar(end) + '</div>' +
       '</div>';
+    atualizarAvisoConformidadeNR6(dados);
   }
 
   function renderizarRodapeNR6(dados) {
@@ -261,14 +302,18 @@
     if (!el) { return; }
     var emp = (dados && dados.empresa) || {};
     var func = (dados && dados.funcionario) || {};
-    var localData = (emp.cidade ? emp.cidade + ", " : "") + "emitida em " + ((dados && dados.emitida_em) || "");
+    var emitidaEm = (dados && dados.emitida_em) || "";
+    var localData = emp.cidade
+      ? (emp.cidade + ", emitida em " + emitidaEm)
+      : ("Emitida em " + emitidaEm);
+    var identColab = "Matrícula: " + (func.matricula || "—") + (func.cpf ? (" · CPF: " + func.cpf) : "");
     el.innerHTML =
       '<div class="ficha-nr6-rodape__local">' + escapar(localData) + '</div>' +
       '<div class="ficha-nr6-rodape__assinaturas">' +
         '<div class="ficha-nr6-rodape__bloco">' +
           '<div class="ficha-nr6-rodape__linha"></div>' +
           '<strong>' + escapar(func.nome || "Colaborador") + '</strong>' +
-          '<span>Matrícula: ' + escapar(func.matricula || "—") + ' · Assinatura do Colaborador</span>' +
+          '<span>' + escapar(identColab) + ' · Assinatura do Colaborador</span>' +
         '</div>' +
         '<div class="ficha-nr6-rodape__bloco">' +
           '<div class="ficha-nr6-rodape__linha"></div>' +
@@ -286,23 +331,30 @@
         '<span class="small text-muted d-block">' + escapar(entrega.condicao_devolucao) + "</span>";
     }
 
+    var htmlComprovacao = "";
+    if (entrega.autenticacao_pin) {
+      var detalheHash = entrega.hash_autenticacao ? (" · #" + escapar(entrega.hash_autenticacao)) : "";
+      htmlComprovacao =
+        '<span class="d-block fw-semibold">Autenticado via PIN</span>' +
+        '<span class="ficha-nr6-selo-hash">' + escapar(entrega.solicitacao || "") + detalheHash + "</span>";
+    } else {
+      htmlComprovacao = '<span class="ficha-nr6-rubrica">Rubrica: ____________</span>';
+    }
+
     return (
       "<tr>" +
         '<td class="text-nowrap">' + escapar(entrega.data_hora || entrega.data) + "</td>" +
         "<td>" +
           escapar(entrega.produto) +
-          '<span class="small text-muted d-block">' + escapar(entrega.solicitacao) + "</span>" +
+          '<span class="small text-muted d-block text-nowrap">' + escapar(entrega.solicitacao) + "</span>" +
         "</td>" +
-        "<td>" + escapar(entrega.ca || "—") + "</td>" +
-        "<td>" + escapar(entrega.lote || "—") + "</td>" +
-        "<td>" + escapar(entrega.quantidade) + "</td>" +
+        '<td class="text-nowrap">' + escapar(entrega.ca || "—") + "</td>" +
+        '<td class="text-nowrap">' + escapar(entrega.lote || "—") + "</td>" +
+        '<td class="text-nowrap">' + escapar(entrega.quantidade) + "</td>" +
         "<td>" + escapar(entrega.motivo) + "</td>" +
         "<td>" + escapar(entrega.almoxarife || "—") + "</td>" +
-        "<td>" + htmlDevolucao + "</td>" +
-        '<td class="solo-impressao-celula ficha-nr6-comprovacao">' +
-          (entrega.autenticacao_pin ? '<span class="d-block">PIN Totem</span>' : "") +
-          '<span class="ficha-nr6-rubrica">Rubrica: ____________</span>' +
-        "</td>" +
+        '<td class="text-nowrap">' + htmlDevolucao + "</td>" +
+        '<td class="solo-impressao-celula ficha-nr6-comprovacao">' + htmlComprovacao + "</td>" +
       "</tr>"
     );
   }
@@ -325,6 +377,7 @@
 
         var paresDadosFuncionario = [
           ["Nome", escapar(funcionario.nome)],
+          ["CPF", escapar(funcionario.cpf || "Não informado")],
           ["Matrícula", escapar(funcionario.matricula)],
           ["Admissão", escapar(funcionario.data_admissao || "—")],
           ["Cargo (RH)", escapar(funcionario.cargo || "—")],

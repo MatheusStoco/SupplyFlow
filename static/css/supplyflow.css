@@ -2075,6 +2075,17 @@ code {
 
 @media print {
   @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  .ficha-nr6-selo-hash {
+    display: block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 6.8pt;
+    color: #333333;
+  }
+  @page {
     size: A4 portrait;
     margin: 12mm 10mm;
   }

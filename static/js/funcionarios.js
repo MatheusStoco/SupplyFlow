@@ -494,6 +494,10 @@
     document.getElementById("func-id").value = funcionario.id;
     document.getElementById("func-nome").value = funcionario.nome;
     document.getElementById("func-matricula").value = funcionario.matricula;
+    var campoCpf = document.getElementById("func-cpf");
+    if (campoCpf) campoCpf.value = funcionario.cpf || "";
+    var campoAdmissao = document.getElementById("func-data-admissao");
+    if (campoAdmissao) campoAdmissao.value = funcionario.data_admissao || "";
     document.getElementById("func-email").value = (funcionario.email === "—") ? "" : funcionario.email;
     var selectCargo = document.getElementById("func-cargo");
     if (selectCargo) {
@@ -793,11 +797,15 @@
     var luva = (document.getElementById("func-tam-luva").value || "").trim();
     var vestimenta = (document.getElementById("func-tam-vestimenta").value || "").trim();
     var campoFuncao = document.getElementById("func-funcao");
+    var campoCpf = document.getElementById("func-cpf");
+    var campoAdmissao = document.getElementById("func-data-admissao");
 
     return {
       id: document.getElementById("func-id").value || null,
       nome: document.getElementById("func-nome").value.trim(),
       matricula: document.getElementById("func-matricula").value.trim(),
+      cpf: campoCpf ? campoCpf.value.trim() : "",
+      data_admissao: campoAdmissao ? campoAdmissao.value.trim() : "",
       pin: document.getElementById("func-pin").value.trim(),
       email: document.getElementById("func-email").value.trim(),
       cargo: document.getElementById("func-cargo").value.trim(),
