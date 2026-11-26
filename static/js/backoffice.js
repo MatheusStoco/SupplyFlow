@@ -14,6 +14,50 @@
 
 (function () {
   var LINK_TOTEM = "/totem/";
+  var CHAVE_TEMA = "sf_tema";
+
+  /* ---------- Tema Visual (Escuro padrão / Claro opcional) ---------- */
+  function lerTemaSalvo() {
+    try {
+      return localStorage.getItem(CHAVE_TEMA) === "claro" ? "claro" : "escuro";
+    } catch (erro) {
+      return "escuro";
+    }
+  }
+
+  function aplicarTema(tema) {
+    var temaNormalizado = tema === "claro" ? "claro" : "escuro";
+    document.documentElement.setAttribute("data-tema", temaNormalizado);
+    try {
+      localStorage.setItem(CHAVE_TEMA, temaNormalizado);
+    } catch (erro) {
+      /* Ignora indisponibilidade de storage em modo restrito */
+    }
+    atualizarBotaoTema(temaNormalizado);
+    return temaNormalizado;
+  }
+
+  function atualizarBotaoTema(tema) {
+    var botao = document.getElementById("btn-alternar-tema");
+    if (!botao) return;
+    var ehClaro = tema === "claro";
+    botao.setAttribute("aria-label", ehClaro ? "Alternar para tema escuro" : "Alternar para tema claro");
+    botao.setAttribute("title", ehClaro ? "Alternar para tema escuro" : "Alternar para tema claro");
+    botao.innerHTML = ehClaro
+      ? '<i class="bi bi-moon-stars" aria-hidden="true"></i><span class="btn-tema__texto">Escuro</span>'
+      : '<i class="bi bi-sun" aria-hidden="true"></i><span class="btn-tema__texto">Claro</span>';
+  }
+
+  SF.tema = {
+    atual: lerTemaSalvo,
+    aplicar: aplicarTema,
+    alternar: function () {
+      return aplicarTema(lerTemaSalvo() === "claro" ? "escuro" : "claro");
+    }
+  };
+
+  /* Aplica imediatamente ao carregar para evitar flash de tema incorreto */
+  aplicarTema(lerTemaSalvo());
 
   /* Símbolo SupplyFlow: o S é o caminho do material (ponto = estoque, seta = entrega) */
   var ICONE_MARCA =
@@ -298,6 +342,9 @@
         "</ol>" +
       "</nav>" +
       '<div class="topbar__acoes">' +
+        '<button class="btn-tema" type="button" id="btn-alternar-tema" aria-label="Alternar tema">' +
+          '<i class="bi bi-sun" aria-hidden="true"></i><span class="btn-tema__texto">Claro</span>' +
+        "</button>" +
         '<a class="topbar__totem" href="' + LINK_TOTEM + '" aria-label="Abrir autoatendimento">' +
           '<span class="topbar__totem-texto">Abrir autoatendimento →</span>' +
           '<i class="bi bi-tablet d-md-none" aria-hidden="true"></i>' +
@@ -314,6 +361,11 @@
           '<span class="btn-sair__texto">Sair</span>' +
         "</button>" +
       "</div>";
+
+    atualizarBotaoTema(lerTemaSalvo());
+    document.getElementById("btn-alternar-tema").addEventListener("click", function () {
+      SF.tema.alternar();
+    });
 
     /* Botão Sair: encerra a sessão no servidor e redireciona para a tela de login */
     document.getElementById("btn-sair").addEventListener("click", function () {
