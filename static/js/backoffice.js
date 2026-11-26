@@ -207,19 +207,20 @@
     }
 
     var idGrupoHtml = "grupo-" + converterParaIdHtml(entrada.grupo);
+    var grupoAberto = entrada.grupo === grupoAtual;
     var htmlSubitens = subitensVisiveis.map(function (subitem) {
       return criarHtmlLinkMenu(subitem, true);
     }).join("");
 
     return (
       "<li>" +
-        '<button class="menu__grupo" type="button" data-bs-toggle="collapse" data-bs-target="#' + idGrupoHtml + '"' +
-                ' aria-expanded="true" aria-controls="' + idGrupoHtml + '">' +
+        '<button class="menu__grupo' + (grupoAberto ? "" : " collapsed") + '" type="button" data-bs-toggle="collapse" data-bs-target="#' + idGrupoHtml + '"' +
+                ' aria-expanded="' + (grupoAberto ? "true" : "false") + '" aria-controls="' + idGrupoHtml + '">' +
           '<i class="bi ' + entrada.icone + '" aria-hidden="true"></i>' +
           escapar(entrada.grupo) +
           '<i class="bi bi-chevron-up menu__seta" aria-hidden="true"></i>' +
         "</button>" +
-        '<ul class="submenu collapse show" id="' + idGrupoHtml + '">' +
+        '<ul class="submenu collapse' + (grupoAberto ? " show" : "") + '" id="' + idGrupoHtml + '">' +
           htmlSubitens +
         "</ul>" +
       "</li>"
