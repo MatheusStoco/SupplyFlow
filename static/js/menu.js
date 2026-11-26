@@ -18,16 +18,10 @@ SF.menu = [
     pagina: "visao-geral"
   },
   {
-    grupo: "Pessoas",
-    icone: "bi-people",
-    itens: [
-      { rotulo: "Funcionários", pagina: "funcionarios", acao: "pessoas" }
-    ]
-  },
-  {
     grupo: "Organização",
     icone: "bi-diagram-3",
     itens: [
+      { rotulo: "Funcionários", pagina: "funcionarios", acao: "pessoas" },
       { rotulo: "Cargos", pagina: "cargos" },
       { rotulo: "Funções", pagina: "funcoes" },
       { rotulo: "Habilitações / NRs", pagina: "habilitacoes" },
