@@ -39,33 +39,39 @@
     };
   }
 
+  // "2026-11-30" -> "30/11/2026"; qualquer outro formato volta como veio
+  function formatarDataBr(iso) {
+    var partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+    return partes ? partes[3] + "/" + partes[2] + "/" + partes[1] : (iso || "");
+  }
+
   function formatarHabilitacoesFichaHtml(funcionario) {
     var habs = (funcionario && funcionario.habilitacoes) || [];
     if (!Array.isArray(habs) || habs.length === 0) {
       return "—";
     }
-    return habs.map(function (h) {
+    return '<span class="ficha-habs">' + habs.map(function (h) {
       var nome = typeof h === "string" ? h : (h.nome || h.habilitacao || "");
-      var validade = (typeof h === "object" && h) ? (h.validade || "") : "";
+      var validade = (typeof h === "object" && h) ? formatarDataBr(h.validade || "") : "";
       var vencida = Boolean(typeof h === "object" && h && h.vencida);
       if (!nome) {
         return "";
       }
       if (vencida) {
         return (
-          '<span class="badge bg-danger-subtle text-danger border border-danger-subtle me-1">' +
+          '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">' +
             '<i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>' +
-            escapar(nome) + (validade ? " (val. " + escapar(validade) + " — VENCIDA)" : " (VENCIDA)") +
+            escapar(nome) + (validade ? " · venceu em " + escapar(validade) : " · vencida") +
           "</span>"
         );
       }
       return (
-        '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle me-1">' +
+        '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">' +
           '<i class="bi bi-shield-check me-1" aria-hidden="true"></i>' +
-          escapar(nome) + (validade ? " (val. " + escapar(validade) + ")" : "") +
+          escapar(nome) + (validade ? " · válida até " + escapar(validade) : "") +
         "</span>"
       );
-    }).join(" ");
+    }).join(" ") + "</span>";
   }
 
   var ROTULOS_EVENTO_FUNCIONAL = {
@@ -379,16 +385,17 @@
           ["Admissão", escapar(funcionario.data_admissao || "—")],
           ["Cargo (RH)", escapar(funcionario.cargo || "—")],
           ["Função (SST)", escapar(funcionario.funcao || "—")],
-          ["Habilitações / NRs", formatarHabilitacoesFichaHtml(funcionario)],
           ["Setor", escapar(formatarSetorFuncionario(funcionario))],
           ["Situação", escapar(funcionario.ativo ? "Ativo" : "Inativo")],
           ["Calçado", escapar(tamanhos.calcado || "—")],
           ["Luva", escapar(tamanhos.luva || "—")],
-          ["Vestimenta", escapar(tamanhos.vestimenta || "—")]
+          ["Vestimenta", escapar(tamanhos.vestimenta || "—")],
+          // Por último e ocupando a linha inteira: os chips das NRs são largos
+          ["Habilitações / NRs", formatarHabilitacoesFichaHtml(funcionario), "dados__largo"]
         ];
 
         document.getElementById("dados-funcionario").innerHTML = paresDadosFuncionario.map(function (par) {
-          return "<div><dt>" + escapar(par[0]) + "</dt><dd>" + par[1] + "</dd></div>";
+          return "<div" + (par[2] ? ' class="' + par[2] + '"' : "") + "><dt>" + escapar(par[0]) + "</dt><dd>" + par[1] + "</dd></div>";
         }).join("");
 
         dadosCarregados = dados;
