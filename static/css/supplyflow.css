@@ -2316,3 +2316,39 @@ code {
     margin: 0 12px 4px 12px;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Olhinho de senha (static/js/olho-senha.js): mostrar/ocultar senha e PIN
+   --------------------------------------------------------------------- */
+.campo-senha {
+  position: relative;
+}
+
+.campo-senha > .form-control {
+  padding-right: 2.75rem;
+}
+
+.campo-senha__olho {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--sf-texto-suave);
+  border-radius: 0 var(--sf-raio) var(--sf-raio) 0;
+  cursor: pointer;
+}
+
+.campo-senha__olho:hover {
+  color: var(--sf-laranja);
+}
+
+.campo-senha__olho:focus-visible {
+  outline: none;
+  box-shadow: var(--sf-anel-foco);
+}
