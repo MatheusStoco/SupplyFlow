@@ -1,7 +1,9 @@
 """Dados e atalhos comuns aos testes. Tudo aqui é fictício."""
 import json
+import re
 from decimal import Decimal
 
+from django.core import mail
 from django.core.cache import cache
 from django.test import TestCase
 
@@ -52,9 +54,22 @@ class BaseTeste(TestCase):
     def post(self, url, dados=None, cliente=None):
         return (cliente or self.client).post(url, json.dumps(dados or {}), content_type="application/json")
 
-    def entrar(self, usuario, cliente=None):
-        resposta = self.post("/api/login/", {"email": usuario.email, "senha": SENHA}, cliente)
+    def entrar(self, usuario, cliente=None, lembrar_30_dias=False):
+        resposta = self.post(
+            "/api/login/",
+            {"email": usuario.email, "senha": SENHA, "lembrar_30_dias": lembrar_30_dias},
+            cliente,
+        )
         self.assertEqual(resposta.status_code, 200, resposta.content)
+        dados = resposta.json()
+        if dados.get("requer_2fa"):
+            codigo = re.search(r"\b(\d{6})\b", mail.outbox[-1].body).group(1)
+            resposta = self.post(
+                "/api/login/2fa/",
+                {"desafio_id": dados["desafio_id"], "codigo": codigo, "lembrar_30_dias": lembrar_30_dias},
+                cliente,
+            )
+            self.assertEqual(resposta.status_code, 200, resposta.content)
         return resposta
 
     def entrar_no_totem(self, usuario=None, cliente=None):

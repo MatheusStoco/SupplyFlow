@@ -96,6 +96,8 @@ urlpatterns = [
     # AUTENTICAÇÃO DO BACKOFFICE
     # =========================================================================
     path("api/login/", views.api_login, name="api_login"),
+    path("api/login/2fa/", views.api_login_2fa, name="api_login_2fa"),
+    path("api/login/2fa/reenviar/", views.api_login_2fa_reenviar, name="api_login_2fa_reenviar"),
     path("api/logout/", views.api_logout, name="api_logout"),
     path("api/sessao/", views.api_sessao, name="api_sessao"),
 

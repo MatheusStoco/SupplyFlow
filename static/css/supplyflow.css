@@ -2608,6 +2608,20 @@ html[data-tema="claro"] .tom-verde    { background: #d1fae5; border-color: #6ee7
 html[data-tema="claro"] .tom-indigo   { background: #e0e7ff; border-color: #a5b4fc; color: #4338ca; }
 html[data-tema="claro"] .tom-vermelho { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
 
+.login__lembrar {
+  font-size: 0.875rem;
+  color: var(--sf-texto-secundario);
+}
+
+.login__codigo-2fa {
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  padding-left: 1.25rem;
+}
+
 .solo-impressao,
 .solo-impressao-celula {
   display: none;

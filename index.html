@@ -40,7 +40,7 @@
       </footer>
     </section>
 
-    <!-- Formulário de login: e-mail + senha, conferidos no servidor -->
+    <!-- Formulário de login: passo 1 (e-mail + senha) e passo 2 (código 2FA de 6 dígitos por e-mail) -->
     <section class="login__area" aria-label="Autenticação">
       <form class="login__form" id="form-login" novalidate>
         <header>
@@ -57,6 +57,13 @@
 
           <label for="senha" class="form-label mt-3">Senha</label>
           <input type="password" id="senha" name="senha" class="form-control" autocomplete="current-password" required>
+
+          <div class="form-check login__lembrar mt-3">
+            <input type="checkbox" class="form-check-input" id="lembrar-30-dias" name="lembrar_30_dias">
+            <label class="form-check-label" for="lembrar-30-dias">
+              Lembrar de mim por 30 dias neste navegador
+            </label>
+          </div>
         </fieldset>
 
         <button type="submit" class="btn btn-primary w-100 login__entrar" id="btn-entrar">
@@ -66,6 +73,51 @@
         <footer class="login__nota d-flex justify-content-between flex-wrap gap-2">
           <a href="/senha/esqueci/">Esqueci minha senha</a>
           <span>Primeiro acesso? Use o link enviado ao seu e-mail.</span>
+        </footer>
+      </form>
+
+      <form class="login__form d-none" id="form-2fa" novalidate>
+        <header>
+          <h2>Verificação em duas etapas</h2>
+          <p class="login__instrucao" id="texto-2fa-destino">
+            Enviamos um código de 6 dígitos para o seu e-mail. Ele é válido por 1 hora.
+          </p>
+        </header>
+
+        <div class="alert alert-danger d-none" role="alert" id="erro-2fa"></div>
+        <div class="alert alert-success d-none" role="status" id="aviso-2fa"></div>
+
+        <fieldset>
+          <legend class="visually-hidden">Código de verificação</legend>
+          <label for="codigo-2fa" class="form-label">Código de 6 dígitos</label>
+          <input
+            type="text"
+            id="codigo-2fa"
+            name="codigo"
+            class="form-control login__codigo-2fa"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            required
+          >
+
+          <div class="form-check login__lembrar mt-3">
+            <input type="checkbox" class="form-check-input" id="lembrar-30-dias-2fa" name="lembrar_30_dias_2fa">
+            <label class="form-check-label" for="lembrar-30-dias-2fa">
+              Lembrar de mim por 30 dias (não pedir código novamente)
+            </label>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary w-100 login__entrar" id="btn-confirmar-2fa">
+          <i class="bi bi-shield-check" aria-hidden="true"></i> Confirmar código
+        </button>
+
+        <footer class="login__nota d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <button type="button" class="btn btn-link btn-sm p-0" id="btn-reenviar-2fa">Reenviar código</button>
+          <button type="button" class="btn btn-link btn-sm p-0" id="btn-voltar-login">← Voltar ao login</button>
         </footer>
       </form>
     </section>

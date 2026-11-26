@@ -58,6 +58,61 @@ class LoginBackofficeTeste(BaseTeste):
                                 content_type="application/json")
         self.assertEqual(resposta.status_code, 403)
 
+    def test_login_exige_2fa_envia_codigo_6_digitos_e_valida_em_1_hora(self):
+        mail.outbox.clear()
+        passo1 = self.post("/api/login/", {"email": self.admin.email, "senha": SENHA})
+        self.assertEqual(passo1.status_code, 200)
+        dados1 = passo1.json()
+        self.assertFalse(dados1["autenticado"])
+        self.assertTrue(dados1["requer_2fa"])
+        self.assertEqual(dados1["validade_minutos"], 60)
+        # Sessão ainda não está autenticada antes de confirmar os 6 dígitos
+        self.assertEqual(self.client.get("/api/sessao/").status_code, 401)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.admin.email])
+        codigo = re.search(r"\b(\d{6})\b", mail.outbox[0].body).group(1)
+
+        # Código errado falha
+        errado = self.post("/api/login/2fa/", {"desafio_id": dados1["desafio_id"], "codigo": "000000"})
+        if codigo != "000000":
+            self.assertEqual(errado.status_code, 401)
+
+        # Código correto conclui o login e registra auditoria
+        passo2 = self.post("/api/login/2fa/", {"desafio_id": dados1["desafio_id"], "codigo": codigo})
+        self.assertEqual(passo2.status_code, 200)
+        self.assertTrue(passo2.json()["autenticado"])
+        self.assertEqual(self.client.get("/api/sessao/").status_code, 200)
+
+    def test_2fa_expira_apos_1_hora(self):
+        mail.outbox.clear()
+        passo1 = self.post("/api/login/", {"email": self.admin.email, "senha": SENHA})
+        dados1 = passo1.json()
+        codigo = re.search(r"\b(\d{6})\b", mail.outbox[-1].body).group(1)
+
+        sessao = self.client.session
+        sessao["pendente_2fa"]["expira_em"] = 1
+        sessao.save()
+
+        expirado = self.post("/api/login/2fa/", {"desafio_id": dados1["desafio_id"], "codigo": codigo})
+        self.assertEqual(expirado.status_code, 400)
+        self.assertIn("expirado", expirado.json()["erro"].lower())
+
+    def test_lembrar_30_dias_dispensa_2fa_no_proximo_login(self):
+        mail.outbox.clear()
+        self.entrar(self.admin, lembrar_30_dias=True)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("sf_2fa_confiavel", self.client.cookies)
+
+        # Mesmo após logout manual, o próximo login neste navegador não pede 2FA novamente
+        self.post("/api/logout/")
+        self.assertEqual(self.client.get("/api/sessao/").status_code, 401)
+
+        segundo_login = self.post("/api/login/", {"email": self.admin.email, "senha": SENHA, "lembrar_30_dias": True})
+        self.assertEqual(segundo_login.status_code, 200)
+        self.assertTrue(segundo_login.json()["autenticado"])
+        self.assertEqual(len(mail.outbox), 1)  # nenhum novo e-mail 2FA enviado
+
 
 class PermissoesTeste(BaseTeste):
     def test_apis_exigem_login(self):
