@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configurações · SupplyFlow</title>
+  <link rel="icon" href="../static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../static/css/supplyflow.css">
+</head>
+<body data-pagina="configuracoes">
+  <div class="app">
+
+    <div class="sidebar-trilho">
+      <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Menu"></aside>
+    </div>
+
+    <div class="app__principal">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="conteudo">
+        <header>
+          <h1 class="pagina-titulo">Configurações</h1>
+          <p class="pagina-descricao">Dados da empresa empregadora, cadastrados uma vez e usados como padrão em todo o sistema.</p>
+        </header>
+
+        <div class="alert d-none" role="status" id="aviso-configuracoes" tabindex="-1"></div>
+
+        <div class="row g-3">
+          <div class="col-12 col-xl-8">
+            <section class="cartao" aria-labelledby="t-empresa">
+              <header class="cartao__cabecalho">
+                <h2 class="cartao__titulo" id="t-empresa"><i class="bi bi-building" aria-hidden="true"></i> Dados da empresa</h2>
+              </header>
+
+              <form id="form-empresa" class="p-3" novalidate>
+                <p class="small text-secondary d-none" id="somente-leitura">
+                  <i class="bi bi-lock" aria-hidden="true"></i> Somente o Administrador pode alterar estes dados.
+                </p>
+                <div class="alert alert-danger d-none" role="alert" id="erro-empresa"></div>
+
+                <fieldset id="campos-empresa" disabled>
+                  <legend class="visually-hidden">Dados cadastrais da empresa</legend>
+                  <div class="row g-3">
+                    <div class="col-12 col-md-8">
+                      <label for="empresa-razao" class="form-label small fw-semibold">Razão social *</label>
+                      <input type="text" id="empresa-razao" class="form-control" maxlength="150" required autocomplete="organization">
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <label for="empresa-cnpj" class="form-label small fw-semibold">CNPJ *</label>
+                      <input type="text" id="empresa-cnpj" class="form-control" inputmode="numeric" maxlength="18"
+                             placeholder="00.000.000/0000-00" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="empresa-fantasia" class="form-label small fw-semibold">Nome fantasia</label>
+                      <input type="text" id="empresa-fantasia" class="form-control" maxlength="150" aria-describedby="ajuda-fantasia">
+                      <div class="form-text" id="ajuda-fantasia">Aparece no topo do backoffice.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="empresa-estabelecimento" class="form-label small fw-semibold">Estabelecimento / unidade</label>
+                      <input type="text" id="empresa-estabelecimento" class="form-control" maxlength="150" placeholder="Ex.: Matriz">
+                    </div>
+                    <div class="col-12">
+                      <label for="empresa-endereco" class="form-label small fw-semibold">Endereço</label>
+                      <input type="text" id="empresa-endereco" class="form-control" maxlength="250"
+                             placeholder="Rua, número - bairro" autocomplete="street-address">
+                    </div>
+                    <div class="col-12 col-md-8">
+                      <label for="empresa-cidade" class="form-label small fw-semibold">Cidade / UF</label>
+                      <input type="text" id="empresa-cidade" class="form-control" maxlength="100" placeholder="Ex.: Curitiba - PR">
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <label for="empresa-cep" class="form-label small fw-semibold">CEP</label>
+                      <input type="text" id="empresa-cep" class="form-control" inputmode="numeric" maxlength="9"
+                             placeholder="00000-000" autocomplete="postal-code">
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-primary" id="btn-salvar-empresa">
+                      <i class="bi bi-check-lg" aria-hidden="true"></i> Salvar dados da empresa
+                    </button>
+                  </div>
+                </fieldset>
+              </form>
+            </section>
+          </div>
+
+          <div class="col-12 col-xl-4">
+            <section class="cartao" aria-labelledby="t-uso">
+              <header class="cartao__cabecalho">
+                <h2 class="cartao__titulo" id="t-uso"><i class="bi bi-diagram-2" aria-hidden="true"></i> Onde estes dados aparecem</h2>
+              </header>
+              <ul class="p-3 ps-4 mb-0 small">
+                <li class="mb-2"><strong>Ficha de EPI (NR-6):</strong> empregador, CNPJ, estabelecimento e endereço no cabeçalho; cidade no local da assinatura.</li>
+                <li class="mb-2"><strong>Topo do backoffice:</strong> nome fantasia da empresa.</li>
+                <li><strong>Auditoria:</strong> cada alteração fica registrada com quem alterou e quando.</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+  </div>
+
+  <script src="../static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="../static/js/menu.js"></script>
+  <script src="../static/js/api.js"></script>
+  <script src="../static/js/sessao.js"></script>
+  <script src="../static/js/backoffice.js"></script>
+  <script src="../static/js/configuracoes.js"></script>
+</body>
+</html>

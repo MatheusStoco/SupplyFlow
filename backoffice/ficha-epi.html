@@ -31,9 +31,9 @@
             <p class="pagina-descricao" id="ficha-emissao">Registro individual das entregas de EPI (RF-43).</p>
           </div>
           <div class="d-flex flex-wrap gap-2 nao-imprimir">
-            <button type="button" class="btn btn-outline-light d-none" id="btn-config-empresa">
+            <a class="btn btn-outline-light d-none" id="btn-config-empresa" href="configuracoes.html">
               <i class="bi bi-building-gear" aria-hidden="true"></i> Dados da Empresa
-            </button>
+            </a>
             <button type="button" class="btn btn-outline-dark" id="btn-nada-consta">
               <i class="bi bi-file-earmark-check" aria-hidden="true"></i> Emitir Nada Consta
             </button>
@@ -132,52 +132,6 @@
       </main>
     </div>
 
-  </div>
-
-  <!-- Modal de Configuração do Tenant / Empresa Empregadora -->
-  <div class="modal fade nao-imprimir" id="modal-empresa" tabindex="-1" aria-labelledby="titulo-modal-empresa" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <form class="modal-content" id="form-empresa">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="titulo-modal-empresa">Dados da Empresa (Tenant)</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <p class="small text-secondary mb-3">Estes dados identificam o empregador no cabeçalho oficial da Ficha de EPI (NR-6).</p>
-          <div class="alert alert-danger d-none" role="alert" id="erro-empresa"></div>
-          <div class="row g-3">
-            <div class="col-12 col-md-8">
-              <label for="empresa-razao" class="form-label small fw-semibold">Razão Social *</label>
-              <input type="text" id="empresa-razao" class="form-control" maxlength="150" required>
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="empresa-cnpj" class="form-label small fw-semibold">CNPJ *</label>
-              <input type="text" id="empresa-cnpj" class="form-control" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" required>
-            </div>
-            <div class="col-12 col-md-6">
-              <label for="empresa-fantasia" class="form-label small fw-semibold">Nome Fantasia</label>
-              <input type="text" id="empresa-fantasia" class="form-control" maxlength="150">
-            </div>
-            <div class="col-12 col-md-6">
-              <label for="empresa-estabelecimento" class="form-label small fw-semibold">Estabelecimento / Unidade</label>
-              <input type="text" id="empresa-estabelecimento" class="form-control" maxlength="150" placeholder="Ex.: Matriz / Fábrica">
-            </div>
-            <div class="col-12 col-md-8">
-              <label for="empresa-endereco" class="form-label small fw-semibold">Endereço completo</label>
-              <input type="text" id="empresa-endereco" class="form-control" maxlength="250" placeholder="Rua, número, bairro, CEP">
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="empresa-cidade" class="form-label small fw-semibold">Cidade / UF</label>
-              <input type="text" id="empresa-cidade" class="form-control" maxlength="100" placeholder="Ex.: Maringá - PR">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btn-salvar-empresa">Salvar dados</button>
-        </div>
-      </form>
-    </div>
   </div>
 
   <script src="../static/vendor/bootstrap/bootstrap.bundle.min.js"></script>

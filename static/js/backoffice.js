@@ -270,6 +270,17 @@
     return prefixoGrupo + escapar(rotuloAtual || "");
   }
 
+  /* Nome fantasia da empresa (Configurações) no início da trilha do topo */
+  var nomeEmpresa = "";
+
+  SF.atualizarNomeEmpresa = function (empresa) {
+    nomeEmpresa = (empresa && empresa.configurada && (empresa.nome_fantasia || empresa.razao_social)) || "";
+    var itemTrilha = document.getElementById("trilha-empresa");
+    if (itemTrilha) {
+      itemTrilha.textContent = nomeEmpresa || "Backoffice";
+    }
+  };
+
   function montarTopo(usuario) {
     var textoTrilha = obterTextoTrilhaTopo();
     var dadosUsuario = usuario || { nome: "", iniciais: "", perfil: "" };
@@ -281,7 +292,7 @@
       "</button>" +
       '<nav aria-label="Você está em">' +
         '<ol class="trilha">' +
-          "<li>Backoffice</li>" +
+          '<li id="trilha-empresa">' + escapar(nomeEmpresa || "Backoffice") + "</li>" +
           '<li aria-current="page">' + textoTrilha + "</li>" +
         "</ol>" +
       "</nav>" +
@@ -326,5 +337,11 @@
     }
   }).catch(function () {
     /* Em caso de 401 (sessão expirada), SF.api redireciona automaticamente ao login */
+  });
+
+  SF.api.get("/api/empresa/").then(function (dados) {
+    SF.atualizarNomeEmpresa(dados.empresa);
+  }).catch(function () {
+    /* Sem os dados da empresa, o topo continua mostrando "Backoffice" */
   });
 })();
