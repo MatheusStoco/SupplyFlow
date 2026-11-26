@@ -12,7 +12,7 @@
            class="form-control{% if form.new_password1.errors %} is-invalid{% endif %}"
            {% if form.new_password1.errors %}aria-invalid="true" aria-describedby="erro-senha1"{% endif %}>
     {% if form.new_password1.errors %}
-      <div class="invalid-feedback" id="erro-senha1">{% for e in form.new_password1.errors %}{{ e }} {% endfor %}</div>
+      <div class="invalid-feedback d-block" id="erro-senha1">{% for e in form.new_password1.errors %}{{ e }} {% endfor %}</div>
     {% endif %}
 
     <label for="id_new_password2" class="form-label mt-3">Repita a nova senha</label>
@@ -20,7 +20,7 @@
            class="form-control{% if form.new_password2.errors %} is-invalid{% endif %}"
            {% if form.new_password2.errors %}aria-invalid="true" aria-describedby="erro-senha2"{% endif %}>
     {% if form.new_password2.errors %}
-      <div class="invalid-feedback" id="erro-senha2">{% for e in form.new_password2.errors %}{{ e }} {% endfor %}</div>
+      <div class="invalid-feedback d-block" id="erro-senha2">{% for e in form.new_password2.errors %}{{ e }} {% endfor %}</div>
     {% endif %}
 
     <button type="submit" class="btn btn-primary w-100 login__entrar">
