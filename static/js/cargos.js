@@ -1,13 +1,21 @@
 /* =====================================================================
    SupplyFlow — Catálogo de Cargos (RH), Funções (SST) e Habilitações (NRs)
    ---------------------------------------------------------------------
-   Gerencia as 3 abas ocupacionais da organização usando /api/cargos/.
+   Compartilhado pelas 3 páginas dedicadas em Organização:
+   - backoffice/cargos.html       (tabela-cargos-corpo)
+   - backoffice/funcoes.html      (tabela-funcoes-corpo)
+   - backoffice/habilitacoes.html (tabela-habilitacoes-corpo)
+   Todas consomem /api/cargos/, /api/cargos/salvar/ e /api/cargos/excluir/.
    ===================================================================== */
 
 (function () {
   var corpoCargos = document.getElementById("tabela-cargos-corpo");
   var corpoFuncoes = document.getElementById("tabela-funcoes-corpo");
   var corpoHabilitacoes = document.getElementById("tabela-habilitacoes-corpo");
+  var corpoAtivo = corpoCargos || corpoFuncoes || corpoHabilitacoes;
+  var campoBusca = document.getElementById("filtro-busca-catalogo");
+  var metaCatalogo = document.getElementById("meta-catalogo");
+
   var escapar = SF.escapar;
   var modalEl = document.getElementById("modal-cargo");
   var modalBs = modalEl ? new bootstrap.Modal(modalEl) : null;
@@ -17,6 +25,12 @@
   var btnNovaHabilitacao = document.getElementById("btn-nova-habilitacao");
   var podeGerenciar = SF.sessao.pode("pessoas");
 
+  var catalogo = {
+    cargos: [],
+    funcoes: [],
+    habilitacoes: []
+  };
+
   if (!podeGerenciar) {
     if (btnNovoCargo) btnNovoCargo.classList.add("d-none");
     if (btnNovaFuncao) btnNovaFuncao.classList.add("d-none");
@@ -24,6 +38,7 @@
   }
 
   function abrirModalOcupacional(tipo, dadosEdicao) {
+    if (!form) return;
     form.reset();
     document.getElementById("cargo-tipo").value = tipo;
     var blocoHab = document.getElementById("bloco-campos-habilitacao");
@@ -31,9 +46,11 @@
     var inputNome = document.getElementById("cargo-nome");
     var tituloModal = document.getElementById("modalCargoTitulo");
     var ajuda = document.getElementById("ajuda-cargo");
+    var inputHabDesc = document.getElementById("hab-descricao");
+    var checkHabValidade = document.getElementById("hab-exige-validade");
 
     if (tipo === "FUNCAO") {
-      blocoHab.classList.add("d-none");
+      if (blocoHab) blocoHab.classList.add("d-none");
       var nomeFuncao = dadosEdicao ? (dadosEdicao.funcao || dadosEdicao.nome || "") : "";
       tituloModal.textContent = nomeFuncao ? "Editar Função / Atividade (SST)" : "Nova Função / Atividade (SST)";
       labelNome.textContent = "Nome da Função / Atividade (SST) *";
@@ -42,7 +59,7 @@
       document.getElementById("cargo-original").value = nomeFuncao;
       inputNome.value = nomeFuncao;
     } else if (tipo === "HABILITACAO") {
-      blocoHab.classList.remove("d-none");
+      if (blocoHab) blocoHab.classList.remove("d-none");
       var nomeHab = dadosEdicao ? (dadosEdicao.habilitacao || dadosEdicao.nome || "") : "";
       tituloModal.textContent = nomeHab ? "Editar Habilitação / NR" : "Nova Habilitação / NR";
       labelNome.textContent = "Código / Nome da Habilitação ou NR *";
@@ -50,10 +67,14 @@
       ajuda.textContent = "Credencial normativa ou licença exigida para liberação de EPIs de risco específico.";
       document.getElementById("cargo-original").value = nomeHab;
       inputNome.value = nomeHab;
-      document.getElementById("hab-descricao").value = (dadosEdicao && dadosEdicao.descricao) ? dadosEdicao.descricao : "";
-      document.getElementById("hab-exige-validade").checked = dadosEdicao ? (dadosEdicao.exige_validade !== false) : true;
+      if (inputHabDesc) {
+        inputHabDesc.value = (dadosEdicao && dadosEdicao.descricao) ? dadosEdicao.descricao : "";
+      }
+      if (checkHabValidade) {
+        checkHabValidade.checked = dadosEdicao ? (dadosEdicao.exige_validade !== false) : true;
+      }
     } else {
-      blocoHab.classList.add("d-none");
+      if (blocoHab) blocoHab.classList.add("d-none");
       var nomeCargo = dadosEdicao ? (dadosEdicao.cargo || dadosEdicao.nome || "") : "";
       tituloModal.textContent = nomeCargo ? "Editar Cargo (RH)" : "Novo Cargo (RH)";
       labelNome.textContent = "Nome do Cargo (RH) *";
@@ -194,13 +215,47 @@
     );
   }
 
-  function renderizarTabelaCatalogo(corpo, lista, mensagemVazia, renderizadorLinha) {
+  function textoBuscaDoItem(item) {
+    var partes = [
+      item.cargo || "",
+      item.funcao || "",
+      item.habilitacao || "",
+      item.nome || "",
+      item.descricao || "",
+      (item.setores || []).join(" "),
+      (item.produtos_vinculados || []).join(" ")
+    ];
+    return partes.join(" ").toLowerCase();
+  }
+
+  function filtrarLista(lista, termo) {
+    if (!termo) return lista;
+    return lista.filter(function (item) {
+      return textoBuscaDoItem(item).indexOf(termo) !== -1;
+    });
+  }
+
+  function atualizarContador(filtrados, total, termo) {
+    if (!metaCatalogo) return;
+    if (termo) {
+      metaCatalogo.textContent = filtrados + " de " + total + " registro(s)";
+    } else {
+      metaCatalogo.textContent = total + (total === 1 ? " registro" : " registros");
+    }
+  }
+
+  function renderizarTabelaCatalogo(corpo, listaCompleta, mensagemVazia, renderizadorLinha) {
     if (!corpo) return;
-    if (lista.length === 0) {
-      corpo.innerHTML = '<tr><td colspan="5" class="tabela-solicitacoes__vazio">' + mensagemVazia + "</td></tr>";
+    var termo = campoBusca ? campoBusca.value.trim().toLowerCase() : "";
+    var filtrada = filtrarLista(listaCompleta, termo);
+    atualizarContador(filtrada.length, listaCompleta.length, termo);
+
+    if (filtrada.length === 0) {
+      var msg = termo ? "Nenhum registro encontrado para a busca informada." : mensagemVazia;
+      corpo.innerHTML = '<tr><td colspan="5" class="tabela-solicitacoes__vazio">' + msg + "</td></tr>";
       return;
     }
-    corpo.innerHTML = lista.map(renderizadorLinha).join("");
+    corpo.innerHTML = filtrada.map(renderizadorLinha).join("");
   }
 
   function conectarEventosAcoes() {
@@ -248,17 +303,31 @@
     });
   }
 
+  function renderizarPaginaAtual() {
+    renderizarTabelaCatalogo(corpoCargos, catalogo.cargos, "Nenhum cargo cadastrado.", criarLinhaCargoHtml);
+    renderizarTabelaCatalogo(corpoFuncoes, catalogo.funcoes, "Nenhuma função/atividade cadastrada.", criarLinhaFuncaoHtml);
+    renderizarTabelaCatalogo(corpoHabilitacoes, catalogo.habilitacoes, "Nenhuma habilitação ou NR cadastrada.", criarLinhaHabilitacaoHtml);
+    conectarEventosAcoes();
+  }
+
   function carregarCargos() {
     SF.api.get("/api/cargos/")
       .then(function (dados) {
-        renderizarTabelaCatalogo(corpoCargos, dados.cargos || [], "Nenhum cargo cadastrado.", criarLinhaCargoHtml);
-        renderizarTabelaCatalogo(corpoFuncoes, dados.funcoes || [], "Nenhuma função/atividade cadastrada.", criarLinhaFuncaoHtml);
-        renderizarTabelaCatalogo(corpoHabilitacoes, dados.habilitacoes || [], "Nenhuma habilitação ou NR cadastrada.", criarLinhaHabilitacaoHtml);
-        conectarEventosAcoes();
+        catalogo.cargos = dados.cargos || [];
+        catalogo.funcoes = dados.funcoes || [];
+        catalogo.habilitacoes = dados.habilitacoes || [];
+        renderizarPaginaAtual();
       })
       .catch(function (erro) {
-        corpoCargos.innerHTML = '<tr><td colspan="5" class="tabela-solicitacoes__vazio">' + escapar(erro.message) + "</td></tr>";
+        if (metaCatalogo) metaCatalogo.textContent = "Erro ao carregar";
+        if (corpoAtivo) {
+          corpoAtivo.innerHTML = '<tr><td colspan="5" class="tabela-solicitacoes__vazio">' + escapar(erro.message) + "</td></tr>";
+        }
       });
+  }
+
+  if (campoBusca) {
+    campoBusca.addEventListener("input", renderizarPaginaAtual);
   }
 
   if (btnNovoCargo) {
@@ -268,15 +337,11 @@
   }
   if (btnNovaFuncao) {
     btnNovaFuncao.addEventListener("click", function () {
-      var tabFunc = document.getElementById("tab-btn-funcoes");
-      if (tabFunc) bootstrap.Tab.getOrCreateInstance(tabFunc).show();
       abrirModalOcupacional("FUNCAO", null);
     });
   }
   if (btnNovaHabilitacao) {
     btnNovaHabilitacao.addEventListener("click", function () {
-      var tabHab = document.getElementById("tab-btn-habilitacoes");
-      if (tabHab) bootstrap.Tab.getOrCreateInstance(tabHab).show();
       abrirModalOcupacional("HABILITACAO", null);
     });
   }
@@ -296,10 +361,12 @@
         payload.funcao = nome;
         payload.funcao_original = original;
       } else if (tipo === "HABILITACAO") {
+        var inputHabDesc = document.getElementById("hab-descricao");
+        var checkHabValidade = document.getElementById("hab-exige-validade");
         payload.habilitacao = nome;
         payload.habilitacao_original = original;
-        payload.descricao = document.getElementById("hab-descricao").value.trim();
-        payload.exige_validade = document.getElementById("hab-exige-validade").checked;
+        payload.descricao = inputHabDesc ? inputHabDesc.value.trim() : "";
+        payload.exige_validade = checkHabValidade ? checkHabValidade.checked : true;
       }
 
       SF.api.post("/api/cargos/salvar/", payload)
@@ -313,19 +380,6 @@
           alert(erro.message);
         });
     });
-  }
-
-  var mapaAbasHash = {
-    "#funcoes": "tab-btn-funcoes",
-    "#habilitacoes": "tab-btn-habilitacoes",
-    "#cargos": "tab-btn-cargos"
-  };
-  var idAbaInicial = mapaAbasHash[window.location.hash];
-  if (idAbaInicial) {
-    var btnAbaInicial = document.getElementById(idAbaInicial);
-    if (btnAbaInicial) {
-      bootstrap.Tab.getOrCreateInstance(btnAbaInicial).show();
-    }
   }
 
   carregarCargos();

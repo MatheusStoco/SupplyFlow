@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Habilitações e NRs · SupplyFlow</title>
+  <link rel="icon" href="../static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../static/css/supplyflow.css">
+</head>
+<body data-pagina="habilitacoes">
+  <div class="app">
+
+    <div class="sidebar-trilho">
+      <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Menu"></aside>
+    </div>
+
+    <div class="app__principal">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="conteudo">
+        <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+          <div>
+            <h1 class="pagina-titulo mb-1">Habilitações &amp; Credenciais (NRs)</h1>
+            <p class="pagina-descricao mb-0">
+              Credenciais normativas exigidas para atividades de risco específico, controle de validade e <a href="politicas.html">políticas de EPIs</a> vinculadas.
+            </p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-primary" id="btn-nova-habilitacao">
+              <i class="bi bi-shield-check" aria-hidden="true"></i> Nova Habilitação / NR
+            </button>
+          </div>
+        </header>
+
+        <section class="cartao" aria-labelledby="t-habilitacoes">
+          <header class="cartao__cabecalho flex-wrap gap-2">
+            <h2 class="cartao__titulo" id="t-habilitacoes">Habilitações cadastradas</h2>
+            <span class="cartao__meta" id="meta-catalogo"></span>
+            <div class="busca-rapida-lista ms-auto">
+              <label for="filtro-busca-catalogo" class="visually-hidden">Buscar habilitação ou NR</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text input-group-text--escuro border-end-0" aria-hidden="true">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="search" id="filtro-busca-catalogo" class="form-control form-control-sm border-start-0"
+                       placeholder="Buscar por NR, descrição ou EPI...">
+              </div>
+            </div>
+          </header>
+          <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-habilitacoes">
+            <table class="tabela-solicitacoes tabela-solicitacoes--compacta">
+              <thead>
+                <tr>
+                  <th scope="col">Habilitação / NR</th>
+                  <th scope="col">Validade e Descrição</th>
+                  <th scope="col">Funcionários habilitados</th>
+                  <th scope="col">EPIs vinculados à credencial</th>
+                  <th scope="col" class="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-habilitacoes-corpo">
+                <tr><td colspan="5" class="text-center py-4 text-muted">Carregando habilitações e credenciais...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Modal Habilitação / NR -->
+  <div class="modal fade" id="modal-cargo" tabindex="-1" aria-labelledby="modalCargoTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <form id="form-cargo">
+          <div class="modal-header border-bottom">
+            <h2 class="modal-title h5 fw-bold" id="modalCargoTitulo">Nova Habilitação / NR</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="cargo-tipo" value="HABILITACAO">
+            <input type="hidden" id="cargo-original">
+
+            <div class="mb-3">
+              <label for="cargo-nome" id="label-cargo-nome" class="form-label small fw-semibold">Código / Nome da Habilitação ou NR *</label>
+              <input type="text" id="cargo-nome" class="form-control" required maxlength="100" placeholder="Ex.: NR-35 Trabalho em Altura, NR-10" aria-describedby="ajuda-cargo">
+              <div class="form-text" id="ajuda-cargo">Credencial normativa ou licença exigida para liberação de EPIs de risco específico.</div>
+            </div>
+
+            <div id="bloco-campos-habilitacao" class="border-top pt-3 mt-3">
+              <div class="mb-3">
+                <label for="hab-descricao" class="form-label small fw-semibold">Descrição / Escopo da NR ou Credencial</label>
+                <input type="text" id="hab-descricao" class="form-control" maxlength="200" placeholder="Ex.: Trabalho em Altura acima de 2 metros">
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="hab-exige-validade" checked>
+                <label class="form-check-label small fw-medium" for="hab-exige-validade">
+                  Exige controle de data de validade / reciclagem periódica
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4 fw-bold" id="btn-salvar-modal-cargo">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="../static/js/menu.js"></script>
+  <script src="../static/js/api.js"></script>
+  <script src="../static/js/sessao.js"></script>
+  <script src="../static/js/backoffice.js"></script>
+  <script src="../static/js/cargos.js"></script>
+</body>
+</html>

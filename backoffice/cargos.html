@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cargos, Funções e Habilitações · SupplyFlow</title>
+  <title>Cargos (RH) · SupplyFlow</title>
   <link rel="icon" href="../static/img/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../static/vendor/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="../static/vendor/bootstrap-icons/bootstrap-icons.min.css">
@@ -22,121 +22,59 @@
       <main class="conteudo">
         <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div>
-            <h1 class="pagina-titulo mb-1">Cargos, Funções e Habilitações</h1>
+            <h1 class="pagina-titulo mb-1">Cargos (RH)</h1>
             <p class="pagina-descricao mb-0">
-              Catálogo das 3 categorias ocupacionais da organização — <strong>Cargos (RH — RF-03)</strong>,
-              <strong>Funções / Atividades (SST — RF-04)</strong> e <strong>Habilitações &amp; Credenciais de Risco (NRs)</strong> —
-              com colaboradores vinculados e <a href="politicas.html">políticas de fornecimento</a> associadas.
+              Catálogo oficial de cargos contratuais da organização, colaboradores vinculados e <a href="politicas.html">políticas de fornecimento</a> associadas.
             </p>
           </div>
-          <div class="d-flex flex-wrap gap-2">
+          <div>
             <button type="button" class="btn btn-primary" id="btn-novo-cargo">
-              <i class="bi bi-briefcase" aria-hidden="true"></i> Novo Cargo (RH)
-            </button>
-            <button type="button" class="btn btn-outline-primary" id="btn-nova-funcao">
-              <i class="bi bi-tools" aria-hidden="true"></i> Nova Função / Atividade
-            </button>
-            <button type="button" class="btn btn-outline-dark" id="btn-nova-habilitacao">
-              <i class="bi bi-shield-check" aria-hidden="true"></i> Nova Habilitação / NR
+              <i class="bi bi-briefcase" aria-hidden="true"></i> Novo Cargo
             </button>
           </div>
         </header>
 
-        <!-- Navegação das 3 Abas Ocupacionais -->
-        <ul class="nav nav-tabs mb-3" id="abas-ocupacionais" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-semibold" id="tab-btn-cargos" data-bs-toggle="tab" data-bs-target="#aba-cargos" type="button" role="tab" aria-controls="aba-cargos" aria-selected="true">
-              <i class="bi bi-briefcase me-1" aria-hidden="true"></i> 1. Cargos (RH — RF-03)
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link fw-semibold" id="tab-btn-funcoes" data-bs-toggle="tab" data-bs-target="#aba-funcoes" type="button" role="tab" aria-controls="aba-funcoes" aria-selected="false">
-              <i class="bi bi-tools me-1" aria-hidden="true"></i> 2. Funções / Atividades (SST — RF-04)
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link fw-semibold" id="tab-btn-habilitacoes" data-bs-toggle="tab" data-bs-target="#aba-habilitacoes" type="button" role="tab" aria-controls="aba-habilitacoes" aria-selected="false">
-              <i class="bi bi-shield-check me-1" aria-hidden="true"></i> 3. Habilitações &amp; Credenciais de Risco (NRs)
-            </button>
-          </li>
-        </ul>
-
-        <div class="tab-content" id="conteudo-abas-ocupacionais">
-          <!-- ABA 1: CARGOS (RH — RF-03) -->
-          <div class="tab-pane fade show active" id="aba-cargos" role="tabpanel" aria-labelledby="tab-btn-cargos">
-            <section class="cartao" aria-label="Lista de cargos">
-              <div class="table-responsive" tabindex="0" role="region" aria-label="Tabela de cargos e funções">
-                <table class="tabela-solicitacoes tabela-solicitacoes--compacta">
-                  <thead>
-                    <tr>
-                      <th scope="col">Cargo (RH)</th>
-                      <th scope="col">Setores</th>
-                      <th scope="col">Funcionários ativos</th>
-                      <th scope="col">Produtos com política para o cargo</th>
-                      <th scope="col" class="text-end">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabela-cargos-corpo">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Carregando cargos...</td></tr>
-                  </tbody>
-                </table>
+        <section class="cartao" aria-labelledby="t-cargos">
+          <header class="cartao__cabecalho flex-wrap gap-2">
+            <h2 class="cartao__titulo" id="t-cargos">Cargos cadastrados</h2>
+            <span class="cartao__meta" id="meta-catalogo"></span>
+            <div class="busca-rapida-lista ms-auto">
+              <label for="filtro-busca-catalogo" class="visually-hidden">Buscar cargo</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text input-group-text--escuro border-end-0" aria-hidden="true">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="search" id="filtro-busca-catalogo" class="form-control form-control-sm border-start-0"
+                       placeholder="Buscar por cargo, setor ou EPI...">
               </div>
-            </section>
+            </div>
+          </header>
+          <div class="table-responsive" tabindex="0" role="region" aria-labelledby="t-cargos">
+            <table class="tabela-solicitacoes tabela-solicitacoes--compacta">
+              <thead>
+                <tr>
+                  <th scope="col">Cargo (RH)</th>
+                  <th scope="col">Setores</th>
+                  <th scope="col">Funcionários ativos</th>
+                  <th scope="col">Produtos com política para o cargo</th>
+                  <th scope="col" class="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-cargos-corpo">
+                <tr><td colspan="5" class="text-center py-4 text-muted">Carregando cargos...</td></tr>
+              </tbody>
+            </table>
           </div>
-
-          <!-- ABA 2: FUNÇÕES / ATIVIDADES (SST — RF-04) -->
-          <div class="tab-pane fade" id="aba-funcoes" role="tabpanel" aria-labelledby="tab-btn-funcoes">
-            <section class="cartao" aria-label="Lista de funções e atividades">
-              <div class="table-responsive" tabindex="0" role="region" aria-label="Tabela de funções e atividades">
-                <table class="tabela-solicitacoes tabela-solicitacoes--compacta">
-                  <thead>
-                    <tr>
-                      <th scope="col">Função / Atividade</th>
-                      <th scope="col">Setores</th>
-                      <th scope="col">Funcionários ativos</th>
-                      <th scope="col">Produtos com política para a função</th>
-                      <th scope="col" class="text-end">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabela-funcoes-corpo">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Carregando funções e atividades...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-
-          <!-- ABA 3: HABILITAÇÕES & CREDENCIAIS DE RISCO (NRs) -->
-          <div class="tab-pane fade" id="aba-habilitacoes" role="tabpanel" aria-labelledby="tab-btn-habilitacoes">
-            <section class="cartao" aria-label="Lista de habilitações e NRs">
-              <div class="table-responsive" tabindex="0" role="region" aria-label="Tabela de habilitações e credenciais de risco">
-                <table class="tabela-solicitacoes tabela-solicitacoes--compacta">
-                  <thead>
-                    <tr>
-                      <th scope="col">Habilitação / NR</th>
-                      <th scope="col">Descrição / Validade</th>
-                      <th scope="col">Funcionários Habilitados</th>
-                      <th scope="col">Produtos com política para a NR</th>
-                      <th scope="col" class="text-end">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tabela-habilitacoes-corpo">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Carregando habilitações e credenciais...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-        </div>
+        </section>
       </main>
     </div>
 
   </div>
 
-  <!-- Modal Unificado: Cargo / Função / Habilitação -->
+  <!-- Modal Cargo (RH) -->
   <div class="modal fade" id="modal-cargo" tabindex="-1" aria-labelledby="modalCargoTitulo" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-content shadow">
         <form id="form-cargo">
           <div class="modal-header border-bottom">
             <h2 class="modal-title h5 fw-bold" id="modalCargoTitulo">Novo Cargo (RH)</h2>
@@ -146,27 +84,14 @@
             <input type="hidden" id="cargo-tipo" value="CARGO">
             <input type="hidden" id="cargo-original">
 
-            <div class="mb-3">
-              <label for="cargo-nome" id="label-cargo-nome" class="form-label small fw-semibold">Nome do Cargo / Função *</label>
+            <div class="mb-0">
+              <label for="cargo-nome" id="label-cargo-nome" class="form-label small fw-semibold">Nome do Cargo (RH) *</label>
               <input type="text" id="cargo-nome" class="form-control" required maxlength="100" placeholder="Ex.: Operador de Caldeira" aria-describedby="ajuda-cargo">
-              <div class="form-text" id="ajuda-cargo">Ao renomear um registro existente, os funcionários e políticas vinculados são atualizados automaticamente.</div>
-            </div>
-
-            <div id="bloco-campos-habilitacao" class="d-none border-top pt-3 mt-3">
-              <div class="mb-3">
-                <label for="hab-descricao" class="form-label small fw-semibold">Descrição / Escopo da NR ou Credencial</label>
-                <input type="text" id="hab-descricao" class="form-control" maxlength="200" placeholder="Ex.: Trabalho em Altura acima de 2 metros">
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="hab-exige-validade" checked>
-                <label class="form-check-label small fw-medium" for="hab-exige-validade">
-                  Exige controle de data de validade / reciclagem periódica
-                </label>
-              </div>
+              <div class="form-text" id="ajuda-cargo">Ao renomear um cargo existente, os funcionários e políticas vinculados são atualizados automaticamente.</div>
             </div>
           </div>
           <div class="modal-footer border-top">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary px-4 fw-bold" id="btn-salvar-modal-cargo">Salvar</button>
           </div>
         </form>

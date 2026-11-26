@@ -58,6 +58,16 @@ def pagina_cargos(request):
 
 
 @pagina_backoffice("ver")
+def pagina_funcoes(request):
+    return render(request, "funcoes.html")
+
+
+@pagina_backoffice("ver")
+def pagina_habilitacoes(request):
+    return render(request, "habilitacoes.html")
+
+
+@pagina_backoffice("ver")
 def pagina_estoque(request):
     return render(request, "estoque.html")
 

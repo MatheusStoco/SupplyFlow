@@ -28,8 +28,9 @@ SF.menu = [
     grupo: "Organização",
     icone: "bi-diagram-3",
     itens: [
-      { rotulo: "Funções", pagina: "funcoes" },
       { rotulo: "Cargos", pagina: "cargos" },
+      { rotulo: "Funções", pagina: "funcoes" },
+      { rotulo: "Habilitações / NRs", pagina: "habilitacoes" },
       { rotulo: "Centros de custo", pagina: "centros-de-custo" }
     ]
   },
