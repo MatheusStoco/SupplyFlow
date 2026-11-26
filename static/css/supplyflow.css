@@ -2068,6 +2068,82 @@ code {
   color: #94a3b8 !important;
 }
 
+/* ---------- Linhas Expansíveis (Accordion) — Lista de Funcionários ---------- */
+.linha-funcionario {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.linha-funcionario:hover > td,
+.linha-funcionario:focus-visible > td {
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.linha-funcionario:focus-visible {
+  outline: 2px solid var(--sf-laranja);
+  outline-offset: -2px;
+}
+
+.linha-funcionario--aberta > td {
+  background: rgba(249, 115, 22, 0.08);
+  border-bottom-color: transparent;
+}
+
+.linha-funcionario__seta {
+  color: var(--sf-texto-suave);
+  font-size: 0.85rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.linha-funcionario--aberta .linha-funcionario__seta {
+  transform: rotate(180deg);
+  color: var(--sf-laranja);
+}
+
+.linha-funcionario-detalhe > td {
+  padding: 0 !important;
+  background: rgba(11, 15, 23, 0.65);
+  border-bottom: 1px solid var(--sf-borda-forte);
+}
+
+.painel-funcionario {
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--sf-laranja);
+}
+
+.painel-funcionario__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.painel-funcionario__bloco {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--sf-raio-sm);
+  background: var(--sf-superficie);
+  border: 1px solid var(--sf-borda);
+}
+
+.painel-funcionario__rotulo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sf-texto-suave);
+  margin-bottom: 0.45rem;
+}
+
+.painel-funcionario__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--sf-borda);
+}
+
 .solo-impressao,
 .solo-impressao-celula {
   display: none;

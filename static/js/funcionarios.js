@@ -315,7 +315,7 @@
       "&dominio=" + encodeURIComponent(dominio);
 
     tabelaCorpo.innerHTML =
-      '<tr><td colspan="7" class="text-center py-4 text-muted">' +
+      '<tr><td colspan="5" class="text-center py-4 text-muted">' +
         '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Carregando colaboradores...' +
       "</td></tr>";
 
@@ -326,7 +326,7 @@
       })
       .catch(function (erro) {
         tabelaCorpo.innerHTML =
-          '<tr><td colspan="7" class="text-center py-4 text-danger">' +
+          '<tr><td colspan="5" class="text-center py-4 text-danger">' +
             "Falha ao carregar funcionários: " + escapar(erro.message) +
           "</td></tr>";
       });
@@ -342,36 +342,30 @@
     };
   }
 
-  /* Monta a badge discreta com a grade de tamanhos cadastrada */
-  function criarBadgeTamanhosHtml(funcionario) {
+  /* Monta o bloco da grade de tamanhos no painel expandido */
+  function criarBlocoTamanhosHtml(funcionario) {
     var tamanhos = obterTamanhosFuncionario(funcionario);
-    var partes = [];
+    var itens = [];
     if (tamanhos.calcado) {
-      partes.push("Calçado " + escapar(tamanhos.calcado));
+      itens.push('<span class="badge bg-light text-secondary border fw-normal">Calçado: ' + escapar(tamanhos.calcado) + "</span>");
     }
     if (tamanhos.luva) {
-      partes.push("Luva " + escapar(tamanhos.luva));
+      itens.push('<span class="badge bg-light text-secondary border fw-normal">Luva: ' + escapar(tamanhos.luva) + "</span>");
     }
     if (tamanhos.vestimenta) {
-      partes.push("Unif. " + escapar(tamanhos.vestimenta));
+      itens.push('<span class="badge bg-light text-secondary border fw-normal">Uniforme: ' + escapar(tamanhos.vestimenta) + "</span>");
     }
-    if (partes.length === 0) {
-      return "";
+    if (itens.length === 0) {
+      return '<span class="small text-muted">Não informada</span>';
     }
-    return (
-      '<div class="mt-1">' +
-        '<span class="badge bg-light text-secondary border fw-normal">' +
-          '<i class="bi bi-rulers me-1" aria-hidden="true"></i>' + partes.join(" · ") +
-        "</span>" +
-      "</div>"
-    );
+    return '<div class="d-flex flex-wrap gap-1">' + itens.join("") + "</div>";
   }
 
-  /* Monta os pequenos badges de Habilitações / NRs na linha do funcionário */
+  /* Monta os badges de Habilitações / NRs no painel expandido */
   function criarBadgesHabilitacoesHtml(funcionario) {
     var habs = funcionario.habilitacoes || [];
     if (!Array.isArray(habs) || habs.length === 0) {
-      return "";
+      return '<span class="small text-muted">Nenhuma habilitação/NR vinculada</span>';
     }
     var badges = habs.map(function (h) {
       var nome = typeof h === "string" ? h : (h.nome || h.habilitacao || "");
@@ -382,23 +376,40 @@
       }
       if (vencida) {
         return (
-          '<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-normal me-1" title="Credencial vencida em ' + escapar(validade) + '">' +
+          '<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-normal" title="Credencial vencida em ' + escapar(validade) + '">' +
             '<i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>' +
             escapar(nome) + (validade ? " (venc. " + escapar(validade) + ")" : " (vencida)") +
           "</span>"
         );
       }
       return (
-        '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle fw-normal me-1">' +
+        '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle fw-normal">' +
           '<i class="bi bi-shield-check me-1" aria-hidden="true"></i>' +
           escapar(nome) + (validade ? " (" + escapar(validade) + ")" : "") +
         "</span>"
       );
     }).join("");
-    return '<div class="mt-1 d-flex flex-wrap gap-1">' + badges + "</div>";
+    return '<div class="d-flex flex-wrap gap-1">' + badges + "</div>";
   }
 
-  /* Monta o HTML de uma linha da tabela de funcionários */
+  function contarNrsVencidas(funcionario) {
+    var habs = funcionario.habilitacoes || [];
+    if (!Array.isArray(habs)) return 0;
+    return habs.filter(function (h) {
+      return typeof h === "object" && h && h.vencida;
+    }).length;
+  }
+
+  function formatarDataBr(iso) {
+    if (!iso || typeof iso !== "string") return "";
+    var partes = iso.split("-");
+    if (partes.length === 3) {
+      return partes[2] + "/" + partes[1] + "/" + partes[0];
+    }
+    return iso;
+  }
+
+  /* Monta o par de linhas (resumo clicável + painel expansível) de cada funcionário */
   function criarLinhaFuncionarioHtml(funcionario) {
     var badgeStatus = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inativo</span>';
     var corBotaoAlternar = "success";
@@ -408,7 +419,7 @@
     if (funcionario.ativo) {
       badgeStatus = '<span class="badge bg-success-subtle text-success border border-success-subtle">Ativo</span>';
       corBotaoAlternar = "danger";
-      rotuloAcaoAlternar = "Desligar / Inativar";
+      rotuloAcaoAlternar = "Inativar / Desligar";
       iconeAlternar = "slash-circle";
     }
 
@@ -420,27 +431,44 @@
         "</span>";
     }
 
-    var badgePinProvisorio = "";
+    var nrsVencidas = contarNrsVencidas(funcionario);
+    var alertasResumo = "";
+    if (nrsVencidas > 0) {
+      alertasResumo +=
+        '<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-normal">' +
+          '<i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>' +
+          escapar(nrsVencidas) + (nrsVencidas === 1 ? " NR vencida" : " NRs vencidas") +
+        "</span>";
+    }
     if (funcionario.exigir_troca_pin || funcionario.pin_provisorio) {
-      badgePinProvisorio =
-        '<div class="mt-1">' +
-          '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-normal" title="Colaborador deverá definir novo PIN no 1º acesso ao Totem">' +
-            '<i class="bi bi-key me-1" aria-hidden="true"></i>PIN provisório' +
-          "</span>" +
-        "</div>";
+      alertasResumo +=
+        '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-normal" title="Colaborador deverá definir novo PIN no 1º acesso ao Totem">' +
+          '<i class="bi bi-key me-1" aria-hidden="true"></i>PIN provisório' +
+        "</span>";
     }
 
-    var htmlFuncaoSst = "";
-    if (funcionario.funcao) {
-      htmlFuncaoSst = '<div class="small text-secondary">Função: ' + escapar(funcionario.funcao) + "</div>";
+    var htmlAlertasResumo = alertasResumo
+      ? '<div class="d-flex flex-wrap gap-1 mt-1">' + alertasResumo + "</div>"
+      : "";
+
+    var linhasVinculo = [
+      "<div><span class=\"text-muted\">Função (SST):</span> <strong>" + escapar(funcionario.funcao || "Não definida") + "</strong></div>",
+      '<div class="mt-1"><span class="text-muted">Acesso:</span> ' + badgeDominio + "</div>"
+    ];
+    if (funcionario.cpf) {
+      linhasVinculo.push('<div class="mt-1"><span class="text-muted">CPF:</span> ' + escapar(funcionario.cpf) + "</div>");
+    }
+    if (funcionario.data_admissao) {
+      linhasVinculo.push('<div class="mt-1"><span class="text-muted">Admissão:</span> ' + escapar(formatarDataBr(funcionario.data_admissao)) + "</div>");
+    }
+    if (funcionario.email && funcionario.email !== "—") {
+      linhasVinculo.push('<div class="mt-1"><span class="text-muted">E-mail:</span> ' + escapar(funcionario.email) + "</div>");
     }
 
-    var subtitulo = funcionario.dominio === "OPERACIONAL"
-      ? "Autoatendimento via Matrícula + PIN"
-      : (funcionario.email || "—");
+    var idDetalhe = "detalhe-func-" + escapar(funcionario.id);
 
     return (
-      "<tr>" +
+      '<tr class="linha-funcionario" data-id="' + escapar(funcionario.id) + '" tabindex="0" role="button" aria-expanded="false" aria-controls="' + idDetalhe + '">' +
         "<td>" +
           '<div class="d-flex align-items-center gap-2">' +
             '<span class="usuario__avatar usuario__avatar--compacto" aria-hidden="true">' +
@@ -448,40 +476,55 @@
             "</span>" +
             "<div>" +
               '<div class="fw-semibold">' + escapar(funcionario.nome) + "</div>" +
-              '<small class="text-muted">' + escapar(subtitulo) + "</small>" +
+              htmlAlertasResumo +
             "</div>" +
           "</div>" +
         "</td>" +
         '<td><span class="numero">' + escapar(funcionario.matricula) + "</span></td>" +
-        "<td>" +
-          '<div class="fw-semibold">' + escapar(funcionario.cargo) + "</div>" +
-          htmlFuncaoSst +
-          criarBadgesHabilitacoesHtml(funcionario) +
-          criarBadgeTamanhosHtml(funcionario) +
-        "</td>" +
-        "<td>" + escapar(funcionario.setor_nome) + "</td>" +
-        "<td>" +
-          badgeDominio +
-          badgePinProvisorio +
-        "</td>" +
-        "<td>" + badgeStatus + "</td>" +
+        "<td>" + escapar(funcionario.cargo || "—") + "</td>" +
+        "<td>" + escapar(funcionario.setor_nome || "—") + "</td>" +
         '<td class="text-end text-nowrap">' +
-          '<a class="btn btn-sm btn-outline-primary me-1" href="ficha-epi.html?id=' + encodeURIComponent(funcionario.id) + '"' +
-             ' aria-label="Ficha de EPI de ' + escapar(funcionario.nome) + '" title="Ficha de EPI">' +
-            '<i class="bi bi-card-checklist" aria-hidden="true"></i>' +
-          "</a>" +
-          '<button type="button" class="btn btn-sm btn-outline-info me-1 btn-mudar-funcao" data-id="' + escapar(funcionario.id) + '"' +
-                  ' aria-label="Mudar função ou setor de ' + escapar(funcionario.nome) + '" title="Mudar Função / Setor">' +
-            '<i class="bi bi-arrow-left-right" aria-hidden="true"></i>' +
-          "</button>" +
-          '<button type="button" class="btn btn-sm btn-outline-secondary me-1 btn-editar" data-id="' + escapar(funcionario.id) + '"' +
-                  ' aria-label="Editar ' + escapar(funcionario.nome) + '" title="Editar">' +
-            '<i class="bi bi-pencil" aria-hidden="true"></i>' +
-          "</button>" +
-          '<button type="button" class="btn btn-sm btn-outline-' + corBotaoAlternar + ' btn-toggle" data-id="' + escapar(funcionario.id) + '"' +
-                  ' aria-label="' + rotuloAcaoAlternar + " " + escapar(funcionario.nome) + '" title="' + rotuloAcaoAlternar + '">' +
-            '<i class="bi bi-' + iconeAlternar + '" aria-hidden="true"></i>' +
-          "</button>" +
+          '<div class="d-inline-flex align-items-center gap-2">' +
+            badgeStatus +
+            '<i class="bi bi-chevron-down linha-funcionario__seta" aria-hidden="true"></i>' +
+          "</div>" +
+        "</td>" +
+      "</tr>" +
+      '<tr class="linha-funcionario-detalhe d-none" id="' + idDetalhe + '" data-detalhe-id="' + escapar(funcionario.id) + '">' +
+        '<td colspan="5">' +
+          '<div class="painel-funcionario">' +
+            '<div class="painel-funcionario__grid">' +
+              '<div class="painel-funcionario__bloco">' +
+                '<div class="painel-funcionario__rotulo">Vínculo e Acesso</div>' +
+                '<div class="small">' + linhasVinculo.join("") + "</div>" +
+              "</div>" +
+              '<div class="painel-funcionario__bloco">' +
+                '<div class="painel-funcionario__rotulo">Habilitações / NRs</div>' +
+                criarBadgesHabilitacoesHtml(funcionario) +
+              "</div>" +
+              '<div class="painel-funcionario__bloco">' +
+                '<div class="painel-funcionario__rotulo">Grade de Tamanhos de EPI</div>' +
+                criarBlocoTamanhosHtml(funcionario) +
+              "</div>" +
+            "</div>" +
+            '<div class="painel-funcionario__acoes">' +
+              '<div class="d-flex flex-wrap gap-2">' +
+                '<a class="btn btn-sm btn-primary" href="ficha-epi.html?id=' + encodeURIComponent(funcionario.id) + '">' +
+                  '<i class="bi bi-card-checklist me-1" aria-hidden="true"></i>Ficha de EPI (NR-6)' +
+                "</a>" +
+                '<button type="button" class="btn btn-sm btn-outline-secondary btn-editar" data-id="' + escapar(funcionario.id) + '">' +
+                  '<i class="bi bi-pencil me-1" aria-hidden="true"></i>Editar Cadastro' +
+                "</button>" +
+                '<button type="button" class="btn btn-sm btn-outline-info btn-mudar-funcao" data-id="' + escapar(funcionario.id) + '"' +
+                        ' title="Registra transição oficial no Histórico Funcional e permite gerar o Kit de EPIs da nova função">' +
+                  '<i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i>Transferir / Mudar Função' +
+                "</button>" +
+              "</div>" +
+              '<button type="button" class="btn btn-sm btn-outline-' + corBotaoAlternar + ' btn-toggle" data-id="' + escapar(funcionario.id) + '">' +
+                '<i class="bi bi-' + iconeAlternar + ' me-1" aria-hidden="true"></i>' + rotuloAcaoAlternar +
+              "</button>" +
+            "</div>" +
+          "</div>" +
         "</td>" +
       "</tr>"
     );
@@ -678,13 +721,48 @@
       });
   }
 
+  function alternarExpansaoFuncionario(linhaResumo) {
+    var id = linhaResumo.dataset.id;
+    var detalheAlvo = tabelaCorpo.querySelector('tr.linha-funcionario-detalhe[data-detalhe-id="' + CSS.escape(id) + '"]');
+    if (!detalheAlvo) return;
+
+    var estavaAberta = !detalheAlvo.classList.contains("d-none");
+
+    /* Mantém apenas 1 funcionário expandido por vez */
+    tabelaCorpo.querySelectorAll("tr.linha-funcionario--aberta").forEach(function (linha) {
+      linha.classList.remove("linha-funcionario--aberta");
+      linha.setAttribute("aria-expanded", "false");
+    });
+    tabelaCorpo.querySelectorAll("tr.linha-funcionario-detalhe:not(.d-none)").forEach(function (detalhe) {
+      detalhe.classList.add("d-none");
+    });
+
+    if (!estavaAberta) {
+      linhaResumo.classList.add("linha-funcionario--aberta");
+      linhaResumo.setAttribute("aria-expanded", "true");
+      detalheAlvo.classList.remove("d-none");
+    }
+  }
+
   function renderizarTabela(listaFuncionarios) {
     if (!listaFuncionarios || listaFuncionarios.length === 0) {
-      tabelaCorpo.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum funcionário encontrado.</td></tr>';
+      tabelaCorpo.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum funcionário encontrado.</td></tr>';
       return;
     }
 
     tabelaCorpo.innerHTML = listaFuncionarios.map(criarLinhaFuncionarioHtml).join("");
+
+    tabelaCorpo.querySelectorAll("tr.linha-funcionario").forEach(function (linha) {
+      linha.addEventListener("click", function () {
+        alternarExpansaoFuncionario(linha);
+      });
+      linha.addEventListener("keydown", function (evento) {
+        if (evento.key === "Enter" || evento.key === " ") {
+          evento.preventDefault();
+          alternarExpansaoFuncionario(linha);
+        }
+      });
+    });
 
     document.querySelectorAll(".btn-editar").forEach(function (botaoEditar) {
       botaoEditar.addEventListener("click", function () {
