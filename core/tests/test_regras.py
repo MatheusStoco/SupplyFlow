@@ -326,6 +326,8 @@ class CadastrosValidacaoTeste(BaseTeste):
 
     def test_admissao_com_kit_admissional_cria_solicitacao_aprovada_e_reserva_estoque(self):
         """Admissão com gerar_kit=True cria solicitação já APROVADA e reserva saldo no estoque do totem."""
+        # O kit só nasce das políticas cadastradas (sem política, não gera kit).
+        RegraFornecimento.objects.create(produto=self.luva, cargo="Soldador")
         r = self.post("/api/funcionarios/salvar/", {
             "nome": "Carlos Admissao",
             "matricula": "009911",
@@ -385,6 +387,7 @@ class CadastrosValidacaoTeste(BaseTeste):
 
     def test_desligamento_cancela_reservas_pendentes_e_retorna_nada_consta(self):
         """Inativar colaborador cancela solicitações/reservas abertas e retorna o resumo de Nada Consta."""
+        RegraFornecimento.objects.create(produto=self.luva, cargo="Soldador")
         kit = rh.gerar_kit_admissional(self.colaborador, self.admin)
         self.assertTrue(kit["gerado"])
         self.estoque_luva.refresh_from_db()

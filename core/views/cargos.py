@@ -193,7 +193,9 @@ def _listar_catalogo_habilitacoes(fichas_ativos=None):
     return sorted(cat.values(), key=lambda x: x["habilitacao"].lower())
 
 
-def _registrar_evento_catalogo(request, entidade, acao, identificador, descricao, **detalhes):
+def _registrar_evento_catalogo(request, entidade, acao, identificador, texto_auditoria, **detalhes):
+    # O texto da auditoria tem nome próprio para não colidir com detalhes["descricao"]
+    # (descrição da Habilitação/NR, lida depois pelo catálogo de habilitações).
     usuario = getattr(request, "usuario", None)
     RegistroAuditoria.objects.create(
         usuario=usuario,
@@ -201,7 +203,7 @@ def _registrar_evento_catalogo(request, entidade, acao, identificador, descricao
         acao=acao,
         entidade=entidade,
         entidade_id=(identificador or "")[:64],
-        descricao=descricao[:255],
+        descricao=texto_auditoria[:255],
         detalhes=detalhes,
         ip=ip_da_requisicao(request) if request is not None else None,
     )
