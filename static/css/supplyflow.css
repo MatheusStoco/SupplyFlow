@@ -1729,6 +1729,7 @@ body {
 
 .dados--linha > div {
   flex-direction: column;
+  justify-content: flex-start; /* em coluna, space-between empurrava o valor para baixo */
   gap: 0.125rem;
   border-bottom: 0;
   padding-bottom: 0;
@@ -2972,3 +2973,8 @@ html[data-tema="claro"] .tom-vermelho { background: #fee2e2; border-color: #fca5
 
 /* Tema claro: o cabeçalho dos cartões tinha um fundo escuro fixo (rgba) que o tema não trocava */
 html[data-tema="claro"] .cartao__cabecalho { background: var(--sf-superficie-sutil); }
+
+/* Ficha de EPI: item que ocupa a linha inteira (Habilitações / NRs) e chips que quebram linha */
+.dados--linha > .dados__largo { grid-column: 1 / -1; }
+.ficha-habs { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.125rem; }
+.ficha-habs .badge { white-space: normal; text-align: left; font-size: 0.8rem; font-weight: 600; padding: 0.35em 0.6em; }
