@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 from ..auditoria import registrar
 from ..models import Fornecedor, Setor
 from ..permissoes import api_backoffice, pode
-from ..servicos.empresa import obter_dados_empresa, salvar_dados_empresa, validar_cnpj
+from ..servicos.empresa import obter_dados_empresa, salvar_dados_empresa, validar_cep, validar_cnpj
 from .util import EntradaInvalida, erro, ler_json, texto
 # ============================================================================
 # SETORES E CENTROS DE CUSTO (RF-02)
@@ -122,7 +122,7 @@ def api_toggle_fornecedor(request, fornecedor_id):
 
 
 # ============================================================================
-# CONFIGURA??O DO TENANT / EMPRESA EMPREGADORA (NR-6)
+# CONFIGURAÇÃO DO TENANT / EMPRESA EMPREGADORA (NR-6)
 # ============================================================================
 @require_GET
 @api_backoffice("ver")
@@ -137,21 +137,24 @@ def api_obter_empresa(request):
 @require_POST
 @api_backoffice("auditoria")
 def api_salvar_empresa(request):
-    """Salva Raz?o Social, CNPJ e endere?o do tenant inicial (somente Administrador)."""
+    """Salva Razão Social, CNPJ e endereço do tenant inicial (somente Administrador)."""
     dados, erro_json = ler_json(request)
     if erro_json:
         return erro_json
     try:
-        razao = texto(dados.get("razao_social"), "Raz?o social", obrigatorio=True, maximo=150)
+        razao = texto(dados.get("razao_social"), "Razão social", obrigatorio=True, maximo=150)
         fantasia = texto(dados.get("nome_fantasia"), "Nome fantasia", maximo=150)
         estabelecimento = texto(dados.get("estabelecimento"), "Estabelecimento", maximo=150)
-        endereco = texto(dados.get("endereco"), "Endere?o", maximo=250)
+        endereco = texto(dados.get("endereco"), "Endereço", maximo=250)
         cidade = texto(dados.get("cidade"), "Cidade/UF", maximo=100)
     except EntradaInvalida as e:
         return erro(str(e))
     cnpj = validar_cnpj(dados.get("cnpj"))
     if not cnpj:
-        return erro("Informe um CNPJ v?lido no formato 00.000.000/0000-00.")
+        return erro("Informe um CNPJ válido no formato 00.000.000/0000-00.")
+    cep = validar_cep(dados.get("cep"))
+    if cep is None:
+        return erro("Informe um CEP válido no formato 00000-000.")
     empresa = salvar_dados_empresa(
         request,
         razao_social=razao,
@@ -160,5 +163,6 @@ def api_salvar_empresa(request):
         estabelecimento=estabelecimento,
         endereco=endereco,
         cidade=cidade,
+        cep=cep,
     )
     return JsonResponse({"sucesso": True, "mensagem": "Dados da empresa salvos com sucesso.", "empresa": empresa})
