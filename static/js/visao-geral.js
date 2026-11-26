@@ -1,187 +1,187 @@
 /* =====================================================================
-   SupplyFlow — Visão Geral (/api/dashboard/ e /api/solicitacoes/)
+   SupplyFlow — Visão Geral: painel de prontidão (/api/painel/)
    ---------------------------------------------------------------------
-   Exibe os indicadores operacionais, a lista das solicitações que
-   aguardam análise e os gráficos de entregas por mês e consumo por
-   centro de custo (RF-48). Se a API falhar, mostra o erro na tela.
+   Em vez de contagens soltas, responde "a equipe está protegida para
+   trabalhar hoje?": situação de cada colaborador (troca de EPI e NRs),
+   o que está parado esperando alguém, NRs que vencem, em quantos dias
+   cada EPI acaba e a atividade do totem hoje. Tudo vem do servidor.
    ===================================================================== */
 
 (function () {
   var escapar = SF.escapar;
 
-  /* ---------- Saudação Personalizada ---------- */
-  function saudarUsuario(usuario) {
+  var CORES_SITUACAO = {
+    troca_vencida: "painel--perigo",
+    nr_vencida: "painel--perigo",
+    troca_vencendo: "painel--alerta",
+    nr_vencendo: "painel--nr",
+    em_dia: "painel--ok"
+  };
+
+  var ICONES_ACAO = {
+    aprovar: "bi-hourglass-split",
+    entregar: "bi-box-seam",
+    risco: "bi-exclamation-triangle"
+  };
+
+  /* ---------- Saudação ---------- */
+  function saudar(usuario) {
     if (!usuario) {
       return;
     }
+    var hora = new Date().getHours();
+    var periodo = hora < 12 ? "Bom dia" : (hora < 18 ? "Boa tarde" : "Boa noite");
     var primeiroNome = (usuario.nome || "").split(" ")[0];
-    document.getElementById("saudacao").textContent = "Olá, " + primeiroNome;
-
-    var elementoDescricao = document.getElementById("descricao-painel");
-    elementoDescricao.innerHTML = "";
-
-    var elementoPerfil = document.createElement("strong");
-    elementoPerfil.textContent = usuario.perfil || "";
-    elementoDescricao.append(
-      "Painel de ",
-      elementoPerfil,
-      " — indicadores operacionais do fornecimento de EPIs e consumíveis."
-    );
+    document.getElementById("saudacao").textContent = periodo + (primeiroNome ? ", " + primeiroNome : "");
   }
 
-  saudarUsuario(SF.sessao.usuarioAtual());
+  saudar(SF.sessao.usuarioAtual());
+  SF.sessao.confirmar().then(saudar).catch(function () {});
 
-  /* ---------- Gráficos (Chart.js) ---------- */
-  function mostrarMensagemGraficoVazio(elementoCanvas, mensagem) {
-    var containerGrafico = elementoCanvas.parentElement;
-    containerGrafico.innerHTML = '<p class="grafico__vazio">' + escapar(mensagem) + "</p>";
-  }
+  /* ---------- 1. Prontidão ---------- */
+  function desenharProntidao(dados) {
+    var numero = document.getElementById("prontidao-numero");
+    var texto = document.getElementById("prontidao-texto");
 
-  function desenharGraficos(entregasPorMes, consumoPorCentro) {
-    if (typeof Chart === "undefined") {
+    if (!dados.total) {
+      numero.textContent = "—";
+      texto.textContent = "Nenhum colaborador ativo cadastrado ainda.";
       return;
     }
 
-    Chart.defaults.font.family = '"Inter", system-ui, sans-serif';
-    Chart.defaults.color = "#94a3b8";
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      Chart.defaults.animation = false;
-    }
+    numero.textContent = dados.percentual + "%";
+    var precisam = dados.total - dados.em_dia;
+    texto.textContent = dados.em_dia + " de " + dados.total + " colaboradores sem troca de EPI ou NR pendente" +
+      (precisam === 1 ? " · 1 precisa de atenção" : (precisam ? " · " + precisam + " precisam de atenção" : ""));
 
-    /* Gráfico 1: Barras de entregas confirmadas nos últimos 6 meses */
-    var canvasEntregas = document.getElementById("grafico-entregas");
-    var totalEntregas = entregasPorMes.valores.reduce(function (acumulado, valorMes) {
-      return acumulado + valorMes;
-    }, 0);
+    var faixasVisiveis = dados.faixas.filter(function (faixa) { return faixa.quantidade > 0; });
+    document.getElementById("prontidao-faixas").innerHTML = faixasVisiveis.map(function (faixa) {
+      return '<span class="painel-faixas__parte ' + CORES_SITUACAO[faixa.codigo] + '" style="flex:' +
+        faixa.quantidade + '" title="' + escapar(faixa.rotulo + ": " + faixa.quantidade) + '"></span>';
+    }).join("");
 
-    if (totalEntregas === 0) {
-      mostrarMensagemGraficoVazio(canvasEntregas, "Nenhuma entrega confirmada nos últimos 6 meses.");
-    } else {
-      new Chart(canvasEntregas, {
-        type: "bar",
-        data: {
-          labels: entregasPorMes.meses,
-          datasets: [{
-            label: "Entregas",
-            data: entregasPorMes.valores,
-            backgroundColor: "#f97316",
-            borderRadius: 4,
-            maxBarThickness: 44
-          }]
-        },
-        options: {
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: "#94a3b8" } },
-            y: { beginAtZero: true, grid: { color: "rgba(255, 255, 255, 0.08)" }, ticks: { precision: 0, color: "#94a3b8" } }
-          }
-        }
-      });
-    }
-
-    /* Gráfico 2: Rosca de consumo financeiro por centro de custo */
-    var canvasConsumo = document.getElementById("grafico-consumo");
-    if (!consumoPorCentro.centros || consumoPorCentro.centros.length === 0) {
-      mostrarMensagemGraficoVazio(canvasConsumo, "Sem consumo registrado nos " + consumoPorCentro.periodo + ".");
-    } else {
-      new Chart(canvasConsumo, {
-        type: "doughnut",
-        data: {
-          labels: consumoPorCentro.centros,
-          datasets: [{
-            data: consumoPorCentro.valores,
-            borderWidth: 2,
-            borderColor: "#121824",
-            backgroundColor: ["#f97316", "#38bdf8", "#10b981", "#f59e0b", "#a855f7"]
-          }]
-        },
-        options: {
-          maintainAspectRatio: false,
-          cutout: "62%",
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: { boxWidth: 10, boxHeight: 10, padding: 14 }
-            },
-            tooltip: {
-              callbacks: {
-                label: function (contexto) {
-                  var valorFormatado = contexto.parsed.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-                  return contexto.label + ": R$ " + valorFormatado;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
+    document.getElementById("prontidao-legenda").innerHTML = dados.faixas.map(function (faixa) {
+      return '<li class="' + (faixa.quantidade ? "" : "painel-legenda__zero") + '">' +
+        '<span class="painel-legenda__cor ' + CORES_SITUACAO[faixa.codigo] + '"></span>' +
+        '<strong>' + escapar(faixa.quantidade) + "</strong> " + escapar(faixa.rotulo) + "</li>";
+    }).join("");
   }
 
-  /* ---------- Montagem dos Cartões e Pendências ---------- */
-  function criarCardIndicadorHtml(indicador) {
-    return (
-      '<div class="cartao indicador">' +
-        "<div>" +
-          '<p class="indicador__rotulo">' + escapar(indicador.rotulo) + "</p>" +
-          '<p class="indicador__valor">' + escapar(indicador.valor) + "</p>" +
-        "</div>" +
-        '<span class="indicador__icone ' + indicador.tom + '" aria-hidden="true">' +
-          '<i class="bi ' + indicador.icone + '"></i>' +
+  /* ---------- 2. Precisa de você agora ---------- */
+  function desenharAcoes(acoes) {
+    var lista = document.getElementById("lista-acoes");
+    if (!acoes.length) {
+      lista.innerHTML = '<li class="painel__vazio"><i class="bi bi-check2-circle" aria-hidden="true"></i> ' +
+        "Nada parado esperando por você.</li>";
+      return;
+    }
+    lista.innerHTML = acoes.map(function (item) {
+      return '<li class="painel-acoes__item painel-acoes__item--' + escapar(item.tipo) + '">' +
+        '<i class="bi ' + (ICONES_ACAO[item.tipo] || "bi-dot") + '" aria-hidden="true"></i>' +
+        '<div class="painel-acoes__texto"><span>' + escapar(item.titulo) + "</span>" +
+        '<small>' + escapar(item.detalhe) + "</small></div>" +
+        '<a class="btn btn-sm painel-acoes__botao" href="' + escapar(item.link) + '">' + escapar(item.acao) + "</a>" +
+        "</li>";
+    }).join("");
+  }
+
+  /* ---------- 3. Radar de NRs ---------- */
+  function desenharRadar(radar) {
+    var area = document.getElementById("radar-nrs");
+    var lista = document.getElementById("radar-lista");
+    var horizonte = radar.horizonte_dias;
+
+    if (!radar.pontos.length) {
+      area.innerHTML = '<div class="painel-radar__linha"></div>';
+      lista.innerHTML = '<li class="painel__vazio">Nenhuma NR vence nos próximos ' + horizonte + " dias.</li>";
+      return;
+    }
+
+    var marcas = radar.pontos.map(function (ponto) {
+      var posicao = Math.max(0, Math.min(ponto.dias, horizonte)) / horizonte * 100;
+      var classe = ponto.dias < 0 ? "painel--perigo" : (ponto.dias <= 30 ? "painel--alerta" : "painel--nr");
+      return '<span class="painel-radar__ponto ' + classe + '" style="left:' + posicao.toFixed(1) + '%"' +
+        ' title="' + escapar(ponto.nr + " · " + ponto.pessoa + " · " + ponto.validade) + '"></span>';
+    }).join("");
+
+    area.innerHTML = '<div class="painel-radar__linha"></div>' + marcas +
+      '<span class="painel-radar__eixo" style="left:0">hoje</span>' +
+      '<span class="painel-radar__eixo" style="left:50%">' + (horizonte / 2) + "d</span>" +
+      '<span class="painel-radar__eixo painel-radar__eixo--fim">' + horizonte + "d</span>";
+
+    lista.innerHTML = radar.pontos.slice(0, 4).map(function (ponto) {
+      var quando = ponto.dias < 0 ? "vencida há " + (-ponto.dias) + " dia(s)" :
+        (ponto.dias === 0 ? "vence hoje" : "vence em " + ponto.dias + " dia(s)");
+      return "<li><strong>" + escapar(ponto.nr) + "</strong> · " + escapar(ponto.pessoa) +
+        ' <span class="' + (ponto.dias < 0 ? "texto-perigo" : "") + '">' + escapar(quando) + "</span></li>";
+    }).join("");
+  }
+
+  /* ---------- 4. Cobertura do estoque ---------- */
+  function desenharCobertura(cobertura) {
+    var prazo = cobertura.prazo_reposicao_dias;
+    var escala = prazo * 4; // a barra cheia representa 4x o prazo de reposição
+    var marcador = (prazo / escala * 100).toFixed(1);
+
+    document.getElementById("cobertura-nota").textContent =
+      "No ritmo dos últimos " + cobertura.janela_dias + " dias · a linha marca o prazo de reposição (" + prazo + " dias).";
+
+    var lista = document.getElementById("lista-cobertura");
+    if (!cobertura.itens.length) {
+      lista.innerHTML = '<p class="painel__vazio">Nenhum produto com estoque no totem.</p>';
+      return;
+    }
+    lista.innerHTML = cobertura.itens.map(function (item) {
+      var semConsumo = item.dias === null;
+      var largura = semConsumo ? 100 : Math.min(item.dias, escala) / escala * 100;
+      var classe = semConsumo ? "painel--neutro" :
+        (item.dias < prazo ? "painel--perigo" : (item.dias < prazo * 2 ? "painel--alerta" : "painel--ok"));
+      var rotulo = semConsumo ? "sem uso" : item.dias + " d";
+      return '<span class="painel-cobertura__nome" title="' + escapar(item.saldo_livre + " un. livres") + '">' +
+          escapar(item.produto) + "</span>" +
+        '<span class="painel-cobertura__barra">' +
+          '<span class="painel-cobertura__preenchido ' + classe + '" style="width:' + largura.toFixed(1) + '%"></span>' +
+          '<span class="painel-cobertura__prazo" style="left:' + marcador + '%"></span>' +
         "</span>" +
-      "</div>"
-    );
+        '<span class="painel-cobertura__dias ' + (classe === "painel--perigo" ? "texto-perigo" : "") + '">' +
+          escapar(rotulo) + "</span>";
+    }).join("");
   }
 
-  function criarItemPendenciaHtml(solicitacao) {
-    return (
-      "<li>" +
-        '<a class="lista-solicitacoes__link" href="solicitacao.html?id=' + encodeURIComponent(solicitacao.id) + '">' +
-          '<span class="numero">' + escapar(solicitacao.codigo) + "</span> · " +
-          escapar(solicitacao.funcionario) + " · " +
-          escapar(solicitacao.produto) +
-        "</a>" +
-        '<span class="status">' +
-          '<span class="selo selo--aguardando">' + escapar(solicitacao.status_rotulo) + "</span>" +
-        "</span>" +
-      "</li>"
-    );
-  }
-
-  function renderizarPainel(dadosDashboard, listaSolicitacoes) {
-    document.getElementById("indicadores").innerHTML =
-      dadosDashboard.indicadores.map(criarCardIndicadorHtml).join("");
-
-    var solicitacoesPendentes = listaSolicitacoes.filter(function (solicitacao) {
-      return solicitacao.status === "aguardando";
-    });
-
-    var elementoLista = document.getElementById("lista-solicitacoes");
-    if (solicitacoesPendentes.length === 0) {
-      elementoLista.innerHTML = "<li>Nenhuma solicitação aguardando análise.</li>";
-    } else {
-      var primeirasOito = solicitacoesPendentes.slice(0, 8);
-      elementoLista.innerHTML = primeirasOito.map(criarItemPendenciaHtml).join("");
+  /* ---------- 5. Pulso do totem ---------- */
+  function desenharPulso(pulso) {
+    var maior = 1;
+    for (var h = 6; h < 24; h++) {
+      maior = Math.max(maior, pulso.pedidos[h] + pulso.entregas[h]);
     }
-
-    desenharGraficos(dadosDashboard.entregasPorMes, dadosDashboard.consumoPorCentro);
+    var html = "";
+    for (var hora = 6; hora < 24; hora++) {
+      var pedidos = pulso.pedidos[hora];
+      var entregas = pulso.entregas[hora];
+      var futuro = hora > pulso.hora_atual;
+      html += '<span class="painel-pulso__hora' + (futuro ? " painel-pulso__hora--futuro" : "") +
+        (hora === pulso.hora_atual ? " painel-pulso__hora--agora" : "") + '"' +
+        ' title="' + hora + 'h: ' + pedidos + " pedido(s), " + entregas + ' entrega(s)">' +
+        '<span class="painel-pulso__entrega" style="height:' + (entregas / maior * 100).toFixed(0) + '%"></span>' +
+        '<span class="painel-pulso__pedido" style="height:' + (pedidos / maior * 100).toFixed(0) + '%"></span>' +
+        "</span>";
+    }
+    document.getElementById("pulso-barras").innerHTML = html;
   }
 
-  Promise.all([SF.api.get("/api/dashboard/"), SF.api.get("/api/solicitacoes/")])
-    .then(function (respostas) {
-      var dadosDashboard = respostas[0];
-      var dadosSolicitacoes = respostas[1];
-      renderizarPainel(dadosDashboard, dadosSolicitacoes.solicitacoes || []);
+  /* ---------- Carga ---------- */
+  SF.api.get("/api/painel/")
+    .then(function (dados) {
+      document.getElementById("painel-atualizado").textContent = dados.data + " · atualizado às " + dados.atualizado_em;
+      desenharProntidao(dados.prontidao);
+      desenharAcoes(dados.acoes);
+      desenharRadar(dados.radar_nrs);
+      desenharCobertura(dados.cobertura);
+      desenharPulso(dados.pulso);
     })
     .catch(function (erro) {
-      document.getElementById("indicadores").innerHTML =
-        '<div class="alert alert-danger" role="alert">' +
-          "Não foi possível carregar o painel: " + escapar(erro.message) +
-        "</div>";
+      var aviso = document.getElementById("aviso-painel");
+      aviso.className = "alert alert-danger";
+      aviso.textContent = "Não foi possível carregar o painel: " + erro.message;
     });
-
-  /* Caso a sessão ainda não estivesse em cache ao abrir a página, atualiza a saudação após confirmar */
-  if (!SF.sessao.usuarioAtual()) {
-    SF.sessao.confirmar().then(saudarUsuario).catch(function () {});
-  }
 })();

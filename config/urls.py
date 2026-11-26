@@ -103,6 +103,7 @@ urlpatterns = [
     # ENDPOINTS DA API DO BACKOFFICE E DASHBOARD
     # =========================================================================
     path("api/dashboard/", views.api_dashboard_kpis, name="api_dashboard"),
+    path("api/painel/", views.api_painel_prontidao, name="api_painel"),
     path("api/usuarios/", views.api_listar_usuarios, name="api_usuarios"),
     path("api/usuarios/salvar/", views.api_salvar_usuario_backoffice, name="api_salvar_usuario"),
     path("api/solicitacoes/", views.api_listar_solicitacoes, name="api_solicitacoes"),
