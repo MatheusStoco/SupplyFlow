@@ -6,7 +6,7 @@ políticas de fornecimento, das habilitações (NRs) e do estoque — sem
 números fixos.
 
 Blocos:
-- prontidão: situação de cada colaborador ativo (troca de EPI e NRs);
+- prontidão: situação de cada pessoa ativa que usa EPI ou tem NR (troca de EPI e NRs);
 - ações: o que está parado esperando alguém (por perfil);
 - radar de NRs: vencidas e que vencem nos próximos 60 dias;
 - cobertura: em quantos dias cada EPI acaba no ritmo de consumo atual;
@@ -82,15 +82,20 @@ def _avaliar_colaborador(colaborador, ultimas_entregas, hoje):
 
 
 def _prontidao(hoje):
-    colaboradores = list(
-        Usuario.objects.filter(ativo=True, perfil="COLABORADOR").select_related("setor").order_by("nome")
-    )
+    ativos = list(Usuario.objects.filter(ativo=True).select_related("setor").order_by("nome"))
 
-    # Última entrega de cada EPI por colaborador (uma consulta só)
+    # Última entrega de cada EPI por pessoa (uma consulta só)
     ultimas = {}
-    for e in (Entrega.objects.filter(eh_epi=True, colaborador__in=colaboradores)
+    for e in (Entrega.objects.filter(eh_epi=True, colaborador__in=ativos)
               .select_related("produto").order_by("data")):
         ultimas.setdefault(e.colaborador_id, {})[e.produto_id] = (e.produto, e.data)
+
+    # Entra no painel quem usa EPI ou tem NR: todo colaborador do totem e também quem tem
+    # perfil administrativo (supervisor, técnico...) mas recebeu EPI ou tem habilitação cadastrada.
+    colaboradores = [
+        u for u in ativos
+        if u.perfil == "COLABORADOR" or u.id in ultimas or obter_ficha_rh(u).get("habilitacoes")
+    ]
 
     contagem = {codigo: 0 for codigo, _ in SITUACOES}
     atencao = []

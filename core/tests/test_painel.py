@@ -67,3 +67,12 @@ class PainelTeste(BaseTeste):
         itens = self.client.get("/api/painel/").json()["cobertura"]["itens"]
         luva = next(i for i in itens if i["produto"] == self.luva.nome)
         self.assertEqual(luva["dias"], 100)  # 10 livres / 0,1 por dia
+
+    def test_nr_de_usuario_administrativo_entra_no_radar(self):
+        """Quem tem perfil do backoffice mas tem NR cadastrada também aparece no painel."""
+        validade = (timezone.localdate() + timedelta(days=4)).isoformat()
+        rh.salvar_metadados_rh(None, self.gestor, habilitacoes=[{"nome": "NR-10", "validade": validade}])
+        self.entrar(self.gestor)
+        dados = self.client.get("/api/painel/").json()
+        self.assertEqual(dados["prontidao"]["total"], 2)  # o colaborador + o gestor com NR
+        self.assertTrue(any(p["pessoa"] == self.gestor.nome and p["dias"] == 4 for p in dados["radar_nrs"]["pontos"]))

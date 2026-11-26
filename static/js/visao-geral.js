@@ -45,13 +45,13 @@
 
     if (!dados.total) {
       numero.textContent = "—";
-      texto.textContent = "Nenhum colaborador ativo cadastrado ainda.";
+      texto.textContent = "Ninguém com EPI entregue ou NR cadastrada ainda.";
       return;
     }
 
     numero.textContent = dados.percentual + "%";
     var precisam = dados.total - dados.em_dia;
-    texto.textContent = dados.em_dia + " de " + dados.total + " colaboradores sem troca de EPI ou NR pendente" +
+    texto.textContent = dados.em_dia + " de " + dados.total + " pessoas sem troca de EPI ou NR pendente" +
       (precisam === 1 ? " · 1 precisa de atenção" : (precisam ? " · " + precisam + " precisam de atenção" : ""));
 
     var faixasVisiveis = dados.faixas.filter(function (faixa) { return faixa.quantidade > 0; });
