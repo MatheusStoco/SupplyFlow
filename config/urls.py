@@ -49,6 +49,7 @@ urlpatterns = [
     path("backoffice/relatorios.html", views.pagina_relatorios, name="relatorios"),
     path("backoffice/ficha-epi.html", views.pagina_ficha_epi, name="ficha_epi"),
     path("backoffice/auditoria.html", views.pagina_auditoria, name="auditoria"),
+    path("backoffice/configuracoes.html", views.pagina_configuracoes, name="configuracoes"),
     path("backoffice/em-construcao.html", views.pagina_em_construcao, name="em_construcao"),
 
     # "Esqueci minha senha" (telas prontas do Django, com o visual do SupplyFlow)

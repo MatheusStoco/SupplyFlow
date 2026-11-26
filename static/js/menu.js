@@ -73,6 +73,6 @@ SF.menu = [
   {
     rotulo: "Configurações",
     icone: "bi-gear",
-    acao: "pessoas"
+    pagina: "configuracoes"
   }
 ];

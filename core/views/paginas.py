@@ -98,6 +98,11 @@ def pagina_auditoria(request):
 
 
 @pagina_backoffice("ver")
+def pagina_configuracoes(request):
+    return render(request, "configuracoes.html")
+
+
+@pagina_backoffice("ver")
 def pagina_em_construcao(request):
     return render(request, "em-construcao.html")
 

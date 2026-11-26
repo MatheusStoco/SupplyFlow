@@ -18,9 +18,6 @@
   var secaoNadaConsta = document.getElementById("secao-nada-consta");
   var corpoNadaConsta = document.getElementById("corpo-nada-consta");
   var btnConfigEmpresa = document.getElementById("btn-config-empresa");
-  var modalEmpresaEl = document.getElementById("modal-empresa");
-  var bsModalEmpresa = modalEmpresaEl ? new bootstrap.Modal(modalEmpresaEl) : null;
-  var formEmpresa = document.getElementById("form-empresa");
   var dadosCarregados = null;
 
   function formatarSetorFuncionario(funcionario) {
@@ -268,7 +265,7 @@
       '<i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>' +
       "<strong>Pendências para validade plena em fiscalização NR-6:</strong> preencha " +
       escapar(pendencias.join(", ")) +
-      " (em <em>Dados da Empresa</em> e no cadastro do colaborador) antes de emitir o PDF oficial.";
+      " (em <em>Configurações</em> e no cadastro do colaborador) antes de emitir o PDF oficial.";
     avisoEl.classList.remove("d-none");
   }
 
@@ -279,7 +276,7 @@
     var razao = emp.razao_social || "Não informado";
     var cnpj = emp.cnpj || "Não informado";
     var estab = emp.estabelecimento || "—";
-    var end = [emp.endereco, emp.cidade].filter(Boolean).join(" — ") || "Não informado";
+    var end = [emp.endereco, emp.cidade, emp.cep ? "CEP " + emp.cep : ""].filter(Boolean).join(" — ") || "Não informado";
     el.innerHTML =
       '<div class="ficha-nr6-cabecalho__topo">' +
         '<div>' +
@@ -435,53 +432,6 @@
     btnNadaConsta.addEventListener("click", function () {
       secaoNadaConsta.classList.remove("d-none");
       secaoNadaConsta.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  if (btnConfigEmpresa && bsModalEmpresa) {
-    btnConfigEmpresa.addEventListener("click", function () {
-      var emp = (dadosCarregados && dadosCarregados.empresa) || {};
-      var erroEl = document.getElementById("erro-empresa");
-      if (erroEl) { erroEl.classList.add("d-none"); }
-      document.getElementById("empresa-razao").value = emp.razao_social || "";
-      document.getElementById("empresa-cnpj").value = emp.cnpj || "";
-      document.getElementById("empresa-fantasia").value = emp.nome_fantasia || "";
-      document.getElementById("empresa-estabelecimento").value = emp.estabelecimento || "";
-      document.getElementById("empresa-endereco").value = emp.endereco || "";
-      document.getElementById("empresa-cidade").value = emp.cidade || "";
-      bsModalEmpresa.show();
-    });
-  }
-
-  if (formEmpresa) {
-    formEmpresa.addEventListener("submit", function (evento) {
-      evento.preventDefault();
-      var erroEl = document.getElementById("erro-empresa");
-      var btnSalvar = document.getElementById("btn-salvar-empresa");
-      if (erroEl) { erroEl.classList.add("d-none"); }
-      if (btnSalvar) { btnSalvar.disabled = true; }
-      SF.api.post("/api/empresa/salvar/", {
-        razao_social: document.getElementById("empresa-razao").value.trim(),
-        cnpj: document.getElementById("empresa-cnpj").value.trim(),
-        nome_fantasia: document.getElementById("empresa-fantasia").value.trim(),
-        estabelecimento: document.getElementById("empresa-estabelecimento").value.trim(),
-        endereco: document.getElementById("empresa-endereco").value.trim(),
-        cidade: document.getElementById("empresa-cidade").value.trim()
-      }).then(function (resp) {
-        if (dadosCarregados) {
-          dadosCarregados.empresa = resp.empresa;
-          renderizarCabecalhoNR6(dadosCarregados);
-          renderizarRodapeNR6(dadosCarregados);
-        }
-        if (bsModalEmpresa) { bsModalEmpresa.hide(); }
-      }).catch(function (erro) {
-        if (erroEl) {
-          erroEl.textContent = (erro && erro.message) || "Erro ao salvar dados da empresa.";
-          erroEl.classList.remove("d-none");
-        }
-      }).finally(function () {
-        if (btnSalvar) { btnSalvar.disabled = false; }
-      });
     });
   }
 
