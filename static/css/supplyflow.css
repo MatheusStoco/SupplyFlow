@@ -2912,6 +2912,9 @@ html[data-tema="claro"] .tom-vermelho { background: #fee2e2; border-color: #fca5
 .painel--neutro { background: var(--sf-borda-forte); }
 
 .painel-prontidao { border-left: 4px solid var(--sf-laranja); border-radius: 0 var(--sf-raio-lg) var(--sf-raio-lg) 0; }
+/* Este cartão não tem cabeçalho: o corpo precisa do próprio respiro em cima */
+.painel-prontidao > .cartao__corpo { padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1.25rem, 2.2vw, 2rem); }
+.painel-prontidao .painel__rotulo { margin-bottom: .875rem; }
 .painel-prontidao__destaque { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; margin-bottom: 1rem; }
 .painel-prontidao__numero { font-family: var(--bs-font-monospace); font-size: clamp(2.75rem, 6vw, 4rem); font-weight: 700; line-height: 1; color: var(--sf-texto); }
 .painel-prontidao__texto { color: var(--sf-texto-secundario); font-size: 1rem; }
