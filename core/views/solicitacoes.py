@@ -12,6 +12,7 @@ from ..models import Entrega, EstoqueTotem, Produto, Solicitacao, Usuario
 from ..permissoes import ACOES, DESCRICAO_ACESSO, PERFIS, PERFIS_BACKOFFICE, api_backoffice
 from ..servicos import RegraViolada, estados
 from ..servicos import solicitacoes as servico
+from ..servicos.painel import montar_painel
 from . import serializacao
 from .util import erro, fmt, gerar_iniciais, ler_json
 
@@ -135,6 +136,14 @@ def api_dashboard_kpis(request):
     })
 
 
+@require_GET
+@api_backoffice("ver")
+def api_painel_prontidao(request):
+    """Painel de prontidão da Visão Geral: equipe em dia, fila de ações, NRs, cobertura e pulso."""
+    acoes = ACOES.get(request.usuario.perfil, set())
+    return JsonResponse(montar_painel(acoes))
+
+
 # ============================================================================
 # SOLICITAÇÕES
 # ============================================================================
@@ -209,5 +218,5 @@ def api_cancelar_solicitacao(request, solicitacao_id):
     return JsonResponse({"sucesso": True, "mensagem": f"Solicitação {s.codigo} cancelada."})
 
 
-__all__ = ["api_listar_usuarios", "api_dashboard_kpis", "api_listar_solicitacoes", "api_detalhe_solicitacao",
+__all__ = ["api_listar_usuarios", "api_dashboard_kpis", "api_painel_prontidao", "api_listar_solicitacoes", "api_detalhe_solicitacao",
            "api_decidir_solicitacao", "api_cancelar_solicitacao"]
